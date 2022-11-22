@@ -13,6 +13,7 @@
         <module>winter-scheduler-center-embed</module>
         <module>winter-workflow-engine-embed</module>
         <module>winter-strategy-embed</module>
+        <module>winter-register-center-embed</module>
     </modules>
 
     <description>The winter of the Internet enterprise is coming, all the major companies are laying off employees, maybe I will be one of them.</description>
