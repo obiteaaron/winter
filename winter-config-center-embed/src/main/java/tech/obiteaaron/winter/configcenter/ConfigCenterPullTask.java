@@ -1,4 +1,4 @@
-package tech.obiteaaron.winter;
+package tech.obiteaaron.winter.configcenter;
 
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -6,7 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 配置中心拉取配置的任务
@@ -60,7 +62,7 @@ final class ConfigCenterPullTask {
                 .map(item -> {
                     // 不能超过开始时间
                     Date lastModified = item.getLastModified();
-                    return lastModified.after(startDate) ? startDate : lastPullDate;
+                    return lastModified.after(startDate) ? startDate : lastModified;
                 }).orElse(new Date());
     }
 }

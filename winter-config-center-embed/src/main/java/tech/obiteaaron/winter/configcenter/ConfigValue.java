@@ -1,4 +1,4 @@
-package tech.obiteaaron.winter;
+package tech.obiteaaron.winter.configcenter;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

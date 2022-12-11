@@ -1,7 +1,8 @@
-package tech.obiteaaron.winter;
+package tech.obiteaaron.winter.configcenter;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
@@ -12,6 +13,7 @@ import org.springframework.core.Ordered;
 import javax.sql.DataSource;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -44,11 +46,25 @@ public class ConfigCenterSpringInit implements ApplicationContextAware, SmartApp
         }
         List<Object> beans = Arrays.stream(applicationContext.getBeanDefinitionNames()).map(item -> applicationContext.getBean(item)).collect(Collectors.toList());
 
-        // TODO
-        DataSource dataSource = null;
+        DataSource dataSource = findDatasourceBean();
         ConfigDatabaseRepository configDatabaseRepository = new ConfigDatabaseRepository();
         configDatabaseRepository.setDataSource(dataSource);
-
+        // 给管理类赋值
+        applicationContext.getBean(ConfigManager.class).setConfigDatabaseRepository(configDatabaseRepository);
+        // 初始化并启动
         ConfigCenterInner.initAndStart(beans, configDatabaseRepository);
+    }
+
+    private DataSource findDatasourceBean() {
+        try {
+            return applicationContext.getBean(DataSource.class);
+        } catch (NoUniqueBeanDefinitionException e) {
+            Map<String, DataSource> beansOfType = applicationContext.getBeansOfType(DataSource.class);
+            DataSource dataSource = beansOfType.get("dataSource");
+            if (dataSource != null) {
+                return dataSource;
+            }
+            return beansOfType.values().iterator().next();
+        }
     }
 }

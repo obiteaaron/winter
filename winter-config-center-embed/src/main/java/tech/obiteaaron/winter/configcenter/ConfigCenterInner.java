@@ -1,4 +1,4 @@
-package tech.obiteaaron.winter;
+package tech.obiteaaron.winter.configcenter;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListValuedMap;
@@ -55,7 +55,7 @@ final class ConfigCenterInner {
     /**
      * 注册配置监听器，整个类
      *
-     * @param bean 类实例
+     * @param beans 类实例
      */
     static void initAndStart(List<Object> beans, ConfigDatabaseRepository configDatabaseRepository) {
         initConfigFromBeans(beans, configDatabaseRepository);
@@ -127,7 +127,8 @@ final class ConfigCenterInner {
                         config.setName(name);
                         config.setGroup(group);
                         config.setDescription(description);
-                        config.setContent(ConfigValueUtil.stringify(fieldValue, field.getType(), field.getGenericType()));
+                        String value = ConfigValueUtil.stringify(fieldValue, field.getType(), field.getGenericType());
+                        config.setContent(StringUtils.firstNonBlank(value, ConfigCenter.UNDEFINED_VALUE));
                         configDatabaseRepository.create(config);
                     });
 

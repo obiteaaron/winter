@@ -1,4 +1,4 @@
-package tech.obiteaaron.winter;
+package tech.obiteaaron.winter.configcenter;
 
 import lombok.Getter;
 import lombok.Setter;
