@@ -1,0 +1,2 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  tech.obiteaaron.winter.utils.distributed.lock.redis.RedisLockSpringAutoConfiguration
