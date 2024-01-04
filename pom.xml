@@ -15,7 +15,8 @@
         <module>winter-strategy-embed</module>
         <module>winter-register-center-embed</module>
         <module>winter-base-embed</module>
-        <module>winter-utils/winter-distributed-lock</module>
+        <module>winter-gateway-rpc</module>
+        <module>winter-common-tools</module>
     </modules>
 
     <description>The winter of the Internet enterprise is coming, all the major companies are laying off employees, maybe I will be one of them.</description>
