@@ -1,2 +1,3 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  tech.obiteaaron.winter.common.tools.lock.redis.RedisLockSpringAutoConfiguration
+  tech.obiteaaron.winter.common.tools.lock.redis.RedisLockSpringAutoConfiguration,\
+  tech.obiteaaron.winter.common.tools.spring.SpringContextHolder.AutoConfiguration

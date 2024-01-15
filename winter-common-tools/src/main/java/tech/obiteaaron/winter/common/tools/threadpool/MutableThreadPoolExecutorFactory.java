@@ -7,6 +7,9 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
+/**
+ * 可变线程池，可持有变量，不会自动释放，用完需要手动关闭
+ */
 @Slf4j
 public class MutableThreadPoolExecutorFactory {
     /**
@@ -17,7 +20,7 @@ public class MutableThreadPoolExecutorFactory {
     /**
      * 其他方法后面再加
      *
-     * @param name
+     * @param name             唯一名称
      * @param poolSizeSupplier
      * @return
      */
@@ -29,6 +32,18 @@ public class MutableThreadPoolExecutorFactory {
                 return v;
             }
         });
+    }
+
+    /**
+     * 需要主动关闭线程池
+     *
+     * @param name 唯一名称
+     */
+    public static void shutdown(String name) {
+        MutableThreadPoolExecutor mutableThreadPoolExecutor = CACHE_MAP.remove(name);
+        if (mutableThreadPoolExecutor != null) {
+            mutableThreadPoolExecutor.shutdown();
+        }
     }
 
     private static class AbortPolicy extends ThreadPoolExecutor.AbortPolicy {

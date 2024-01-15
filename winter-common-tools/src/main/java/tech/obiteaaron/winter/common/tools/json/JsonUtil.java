@@ -57,9 +57,6 @@ public class JsonUtil {
 
     public static String toJsonString(Object object) {
         try {
-            if (object == null) {
-                return null;
-            }
             return objectMapper.writeValueAsString(object);
         } catch (Exception e) {
             throw new RuntimeException(e);

@@ -45,6 +45,13 @@
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <!--suppress MavenPackageUpdate -->
+            <version>5.3.20</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
             <artifactId>spring-tx</artifactId>
             <version>5.3.20</version>
             <scope>provided</scope>

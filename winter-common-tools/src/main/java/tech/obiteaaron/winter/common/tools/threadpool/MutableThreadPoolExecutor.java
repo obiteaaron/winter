@@ -28,7 +28,7 @@ public class MutableThreadPoolExecutor extends ThreadPoolExecutor {
 
 
     public void refresh() {
-        Integer newPoolSize = Optional.ofNullable(poolSizeSupplier.get()).orElse(0);
+        int newPoolSize = Optional.ofNullable(poolSizeSupplier.get()).orElse(0);
         if (newPoolSize <= 0) {
             return;
         }
@@ -42,5 +42,28 @@ public class MutableThreadPoolExecutor extends ThreadPoolExecutor {
             setCorePoolSize(newPoolSize);
         }
         setMaximumPoolSize(newPoolSize);
+    }
+
+    @Override
+    public void execute(@NotNull Runnable command) {
+        super.execute(ThreadUtil.wrapperForSubThread(command));
+    }
+
+    @NotNull
+    @Override
+    public Future<?> submit(@NotNull Runnable task) {
+        return super.submit(ThreadUtil.wrapperForSubThread(task));
+    }
+
+    @NotNull
+    @Override
+    public <T> Future<T> submit(@NotNull Runnable task, T result) {
+        return super.submit(ThreadUtil.wrapperForSubThread(task), result);
+    }
+
+    @NotNull
+    @Override
+    public <T> Future<T> submit(@NotNull Callable<T> task) {
+        return super.submit(ThreadUtil.wrapperForSubThread(task));
     }
 }
