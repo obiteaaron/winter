@@ -10,7 +10,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>winter-common-tools</artifactId>
+    <artifactId>winter-embed-common-tools</artifactId>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>

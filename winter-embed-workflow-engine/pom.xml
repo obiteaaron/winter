@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>winter-strategy-embed</artifactId>
+    <artifactId>winter-embed-workflow-engine</artifactId>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>

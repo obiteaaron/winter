@@ -5,7 +5,7 @@
     ```xml
         <dependency>
             <groupId>tech.obiteaaron.winter</groupId>
-            <artifactId>winter-config-center-embed</artifactId>
+            <artifactId>winter-embed-config-center</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
     ```

@@ -9,14 +9,15 @@
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
     <modules>
-        <module>winter-config-center-embed</module>
-        <module>winter-scheduler-center-embed</module>
-        <module>winter-workflow-engine-embed</module>
-        <module>winter-strategy-embed</module>
-        <module>winter-register-center-embed</module>
-        <module>winter-base-embed</module>
-        <module>winter-gateway-rpc</module>
-        <module>winter-common-tools</module>
+        <module>winter-embed-base</module>
+        <module>winter-embed-common-tools</module>
+        <module>winter-embed-config-center</module>
+        <module>winter-embed-register-center</module>
+        <module>winter-embed-rpc</module>
+        <module>winter-embed-scheduler-center</module>
+        <module>winter-embed-strategy-center</module>
+        <module>winter-embed-workflow-engine</module>
+        <module>winter-embed-web-manager</module>
     </modules>
 
     <description>The winter of the Internet enterprise is coming, all the major companies are laying off employees, maybe I will be one of them.</description>
