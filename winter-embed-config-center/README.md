@@ -6,7 +6,7 @@
         <dependency>
             <groupId>tech.obiteaaron.winter</groupId>
             <artifactId>winter-embed-config-center</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.0.0-SNAPSHOT</version>
         </dependency>
     ```
 3. SpringBoot工程可直接启动
