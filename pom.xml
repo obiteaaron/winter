@@ -20,7 +20,9 @@
         <module>winter-embed-web-manager</module>
     </modules>
 
-    <description>The winter of the Internet enterprise is coming, all the major companies are laying off employees, maybe I will be one of them.</description>
+    <description>The winter of the Internet enterprise is coming, all the major companies are laying off employees,
+        maybe I will be one of them.
+    </description>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -72,4 +74,21 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
