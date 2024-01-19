@@ -111,25 +111,25 @@ final class ConfigCenterInner {
                     });
                     // 第一次初始化时插入新配置
                     INIT_THREAD_POOL.submit(() -> {
-                        Long id = configDatabaseRepository.queryIdByNameAndGroup(name, group);
-                        if (id != null) {
-                            // 已存在
-                            return;
-                        }
-                        field.setAccessible(true);
-                        Object fieldValue = null;
                         try {
+                            Long id = configDatabaseRepository.queryIdByNameAndGroup(name, group);
+                            if (id != null) {
+                                // 已存在
+                                return;
+                            }
+                            field.setAccessible(true);
+                            Object fieldValue = null;
                             fieldValue = field.get(bean);
-                        } catch (IllegalAccessException e) {
-                            throw new RuntimeException(e);
+                            Config config = new Config();
+                            config.setName(name);
+                            config.setGroup(group);
+                            config.setDescription(description);
+                            String value = ConfigValueUtil.stringify(fieldValue, field.getType(), field.getGenericType());
+                            config.setContent(StringUtils.firstNonBlank(value, ConfigCenter.UNDEFINED_VALUE));
+                            configDatabaseRepository.create(config);
+                        } catch (Exception e) {
+                            log.error("create configValue exception name={}, group={}", name, group, e);
                         }
-                        Config config = new Config();
-                        config.setName(name);
-                        config.setGroup(group);
-                        config.setDescription(description);
-                        String value = ConfigValueUtil.stringify(fieldValue, field.getType(), field.getGenericType());
-                        config.setContent(StringUtils.firstNonBlank(value, ConfigCenter.UNDEFINED_VALUE));
-                        configDatabaseRepository.create(config);
                     });
 
                 } catch (Throwable t) {

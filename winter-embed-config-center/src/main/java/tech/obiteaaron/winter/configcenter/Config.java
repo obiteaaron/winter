@@ -15,6 +15,16 @@ public final class Config {
      * 数据库主键
      */
     private Long id;
+
+    /**
+     * 创建时间，用于拉取变化，精度毫秒
+     */
+    private Date gmtCreate;
+
+    /**
+     * 最后修改时间，用于拉取变化，精度毫秒
+     */
+    private Date gmtModified;
     /**
      * 配置分组（64个字符）
      */
@@ -27,11 +37,6 @@ public final class Config {
      * 配置内容，mediumtext长度
      */
     private String content;
-
-    /**
-     * 最后修改时间，用于拉取变化，精度毫秒
-     */
-    private Date lastModified;
     /**
      * 描述。长度255
      */

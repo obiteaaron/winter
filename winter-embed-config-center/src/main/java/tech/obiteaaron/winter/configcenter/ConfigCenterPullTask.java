@@ -34,7 +34,7 @@ final class ConfigCenterPullTask {
                     deltaConfigs = configDatabaseRepository.queryDelta(lastPullDate);
                 }
                 int effectNum = ConfigCenterInner.mergeDeltaConfigAndTriggerListener(deltaConfigs);
-                if (deltaConfigs.size() > 0 || effectNum > 0) {
+                if (!deltaConfigs.isEmpty() || effectNum > 0) {
                     log.info("ConfigCenter config changed, delta={}, effectNum={}", deltaConfigs.size(), effectNum);
                 }
                 lastPullDate = calcNewLastPullDate(startDate);
@@ -54,15 +54,15 @@ final class ConfigCenterPullTask {
         // 按所有配置的最大时间和拉取的开始时间比较
         return ConfigCenterInner.getAllConfigs().stream()
                 .peek(item -> {
-                    if (item.getLastModified() == null) {
-                        item.setLastModified(new Date(0));
+                    if (item.getGmtModified() == null) {
+                        item.setGmtModified(new Date(0));
                     }
                 })
-                .max(Comparator.comparingLong(item -> item.getLastModified().getTime()))
+                .max(Comparator.comparingLong(item -> item.getGmtModified().getTime()))
                 .map(item -> {
                     // 不能超过开始时间
-                    Date lastModified = item.getLastModified();
-                    return lastModified.after(startDate) ? startDate : lastModified;
+                    Date gmtModified = item.getGmtModified();
+                    return gmtModified.after(startDate) ? startDate : gmtModified;
                 }).orElse(new Date());
     }
 }

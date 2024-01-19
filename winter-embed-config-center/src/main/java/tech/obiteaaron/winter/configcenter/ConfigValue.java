@@ -24,5 +24,5 @@ public @interface ConfigValue {
     /**
      * 配置描述，255长度
      */
-    String description();
+    String description() default "";
 }
