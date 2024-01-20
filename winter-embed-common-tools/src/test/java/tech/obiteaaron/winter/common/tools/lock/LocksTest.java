@@ -1,4 +1,4 @@
-package tech.obiteaaron.winter.utils.distributed.lock;
+package tech.obiteaaron.winter.common.tools.lock;
 
 import org.junit.Assert;
 import org.junit.Test;

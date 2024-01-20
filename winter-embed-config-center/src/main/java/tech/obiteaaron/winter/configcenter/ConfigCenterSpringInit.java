@@ -39,6 +39,11 @@ public class ConfigCenterSpringInit implements ApplicationContextAware, SmartApp
     }
 
     @Override
+    public boolean supportsSourceType(Class<?> sourceType) {
+        return true;
+    }
+
+    @Override
     public void onApplicationEvent(ApplicationEvent event) {
         if (!INITIALIZED.compareAndSet(false, true)) {
             log.warn("ConfigCenter already INITIALIZED");
