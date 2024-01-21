@@ -21,7 +21,9 @@ public class ProviderDispatcher {
             String uri = httpServerRequest.uri();
             // 消费者调用的的URL
             String consumerUrl = httpServerRequest.getParam("consumerUrl");
-            InvokeContext invokeContext = deserialize(body);
+            // 序列化方式
+            String serializer = httpServerRequest.getParam("serializer");
+            InvokeContext invokeContext = deserialize(body, serializer);
             return doExecute(invokeContext);
         } catch (Exception e) {
             throw e instanceof RuntimeException ? (RuntimeException) e : new RuntimeException(e);
@@ -30,7 +32,7 @@ public class ProviderDispatcher {
         }
     }
 
-    private InvokeContext deserialize(String body) {
+    private InvokeContext deserialize(String body, String serializer) {
         // 反序列化基本的上下文结构
         InvokeContext invokeContext = JsonUtil.parseObject(body, InvokeContext.class);
         // TODO 反序列化参数对象
@@ -58,7 +60,7 @@ public class ProviderDispatcher {
             // TODO 加Filter
             Object result = method.invoke(bean, arguments);
             // TODO 序列化
-            return null;
+            return JsonUtil.toJsonString(result);
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
         } finally {

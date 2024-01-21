@@ -8,6 +8,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.SmartApplicationListener;
 import tech.obiteaaron.winter.embed.registercenter.impl.DefaultRegisterServiceImpl;
 import tech.obiteaaron.winter.embed.rpc.WinterRpcBootstrap;
+import tech.obiteaaron.winter.embed.rpc.executing.ConsumerDispatcher;
 import tech.obiteaaron.winter.embed.rpc.executing.ProviderDispatcher;
 import tech.obiteaaron.winter.embed.rpc.regesiter.RegisterManager;
 import tech.obiteaaron.winter.embed.rpc.server.VertxHttpServer;
@@ -16,24 +17,29 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @Configuration
 public class WinterRpcSpringAutoConfiguration implements SmartApplicationListener {
-    private final RegisterManager registerManager = new RegisterManager();
 
     @Value("${tech.obiteaaron.winter.embed.rpc.port}")
     private int port = 7080;
 
     private final AtomicBoolean atomicBoolean = new AtomicBoolean();
 
+    private WinterRpcBootstrap winterRpcBootstrapSpringInstance;
+
     @Bean
     public WinterRpcSpringBeanFactoryPostProcessor winterRpcSpringBeanFactoryPostProcessor() {
         WinterRpcSpringBeanFactoryPostProcessor bean = new WinterRpcSpringBeanFactoryPostProcessor();
-        bean.setRegisterManager(registerManager);
+        winterRpcBootstrapSpringInstance = winterRpcBootstrap();
+        bean.setWinterRpcBootstrap(winterRpcBootstrapSpringInstance);
         return bean;
     }
 
     public WinterRpcBootstrap winterRpcBootstrap() {
         // 构造一下对象内的属性
+        RegisterManager registerManager = new RegisterManager();
         ProviderDispatcher providerDispatcher = new ProviderDispatcher();
         providerDispatcher.setRegisterManager(registerManager);
+        ConsumerDispatcher consumerDispatcher = new ConsumerDispatcher();
+        consumerDispatcher.setRegisterManager(registerManager);
         registerManager.setRegisterService(new DefaultRegisterServiceImpl());
         WinterRpcBootstrap winterRpcBootstrap = new WinterRpcBootstrap();
         VertxHttpServer vertxHttpServer = new VertxHttpServer();
@@ -41,6 +47,8 @@ public class WinterRpcSpringAutoConfiguration implements SmartApplicationListene
         winterRpcBootstrap.setVertxHttpServer(vertxHttpServer);
         winterRpcBootstrap.setRegisterManager(registerManager);
         winterRpcBootstrap.setProviderDispatcher(providerDispatcher);
+        winterRpcBootstrap.setConsumerDispatcher(consumerDispatcher);
+
         winterRpcBootstrap.setPort(port);
 
         return winterRpcBootstrap;
@@ -54,8 +62,7 @@ public class WinterRpcSpringAutoConfiguration implements SmartApplicationListene
     @Override
     public void onApplicationEvent(ApplicationEvent event) {
         if (atomicBoolean.compareAndSet(false, true)) {
-            WinterRpcBootstrap winterRpcBootstrap = winterRpcBootstrap();
-            winterRpcBootstrap.start();
+            winterRpcBootstrapSpringInstance.start();
         }
     }
 

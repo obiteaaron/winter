@@ -15,10 +15,10 @@ import org.springframework.core.type.classreading.MethodMetadataReadingVisitor;
 import org.springframework.util.ReflectionUtils;
 import tech.obiteaaron.winter.embed.rpc.WinterConsumer;
 import tech.obiteaaron.winter.embed.rpc.WinterProvider;
+import tech.obiteaaron.winter.embed.rpc.WinterRpcBootstrap;
 import tech.obiteaaron.winter.embed.rpc.executing.ConsumerInvocationHandler;
 import tech.obiteaaron.winter.embed.rpc.regesiter.ConsumerConfig;
 import tech.obiteaaron.winter.embed.rpc.regesiter.ProviderConfig;
-import tech.obiteaaron.winter.embed.rpc.regesiter.RegisterManager;
 
 import javax.annotation.Resource;
 import java.lang.reflect.Field;
@@ -36,7 +36,7 @@ public class WinterRpcSpringBeanFactoryPostProcessor implements BeanFactoryPostP
     private static final Map<String, Pair<String, Map<String, Object>>> beanAnnotaionMap = new HashMap<>();
 
     @Setter
-    private RegisterManager registerManager;
+    private WinterRpcBootstrap winterRpcBootstrap;
 
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
@@ -69,7 +69,7 @@ public class WinterRpcSpringBeanFactoryPostProcessor implements BeanFactoryPostP
     }
 
     private void registerConsumerProxy(ConfigurableListableBeanFactory beanFactory, Field field) {
-        Class<? extends Field> aClass = field.getClass();
+        Class<?> aClass = field.getType();
         if (!aClass.isInterface()) {
             return;
         }
@@ -81,7 +81,7 @@ public class WinterRpcSpringBeanFactoryPostProcessor implements BeanFactoryPostP
             return;
         }
         String beanName = generateConsumerBeanName(aClass);
-        ConsumerInvocationHandler consumerInvocationHandler = new ConsumerInvocationHandler(annotation);
+        ConsumerInvocationHandler consumerInvocationHandler = new ConsumerInvocationHandler(annotation, winterRpcBootstrap);
         Object proxyBean = Proxy.newProxyInstance(aClass.getClassLoader(), new Class[]{aClass}, consumerInvocationHandler);
         beanFactory.registerSingleton(beanName, proxyBean);
         consumerProxyBeanMap.put(aClass, proxyBean);
@@ -91,10 +91,10 @@ public class WinterRpcSpringBeanFactoryPostProcessor implements BeanFactoryPostP
                 .interfaceClass(aClass)
                 .interfaceName(aClass.getName())
                 .build();
-        registerManager.subscribe(consumerConfig);
+        winterRpcBootstrap.getRegisterManager().subscribe(consumerConfig);
     }
 
-    private String generateConsumerBeanName(Class<? extends Field> aClass) {
+    private String generateConsumerBeanName(Class<?> aClass) {
         return aClass.getName() + ":Consumer";
     }
 
@@ -128,7 +128,7 @@ public class WinterRpcSpringBeanFactoryPostProcessor implements BeanFactoryPostP
         }
 
         for (Class<?> anInterface : interfaces) {
-            if (providerInterfaces != null && !Arrays.asList(providerInterfaces).contains(anInterface.getName())) {
+            if (providerInterfaces != null && providerInterfaces.length > 0 && !Arrays.asList(providerInterfaces).contains(anInterface.getName())) {
                 // 忽略
                 continue;
             }
@@ -138,7 +138,7 @@ public class WinterRpcSpringBeanFactoryPostProcessor implements BeanFactoryPostP
                     .interfaceName(anInterface.getName())
                     .interfaceImpl(bean)
                     .build();
-            registerManager.register(providerConfig);
+            winterRpcBootstrap.getRegisterManager().register(providerConfig);
         }
 
         return bean;

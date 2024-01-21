@@ -13,7 +13,7 @@ public class HessianWinterDeserializer implements WinterDeserializer {
     }
 
     @Override
-    public Object deserializer(String value) {
+    public Object deserializer(String value, Class<?>[] types) {
         try {
             ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(value.getBytes());
             HessianInput hessianOutput = new HessianInput(byteArrayInputStream);

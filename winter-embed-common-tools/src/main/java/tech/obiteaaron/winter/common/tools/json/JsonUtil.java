@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -15,7 +16,7 @@ import java.util.List;
  */
 public class JsonUtil {
 
-    public static final ObjectMapper objectMapper;
+    private static final ObjectMapper objectMapper;
 
     static {
         objectMapper = new ObjectMapper();
@@ -46,6 +47,17 @@ public class JsonUtil {
         }
     }
 
+    public static <T> T parseObject(String jsonString, JavaType javaType) {
+        try {
+            if (StringUtils.isBlank(jsonString)) {
+                return null;
+            }
+            return objectMapper.readValue(jsonString, javaType);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static <T> T parseObject(String jsonString, TypeReference<T> typeReference) {
         try {
             if (StringUtils.isBlank(jsonString)) {
@@ -60,6 +72,14 @@ public class JsonUtil {
     public static String toJsonString(Object object) {
         try {
             return objectMapper.writeValueAsString(object);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static TypeFactory getTypeFactory() {
+        try {
+            return objectMapper.getTypeFactory();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

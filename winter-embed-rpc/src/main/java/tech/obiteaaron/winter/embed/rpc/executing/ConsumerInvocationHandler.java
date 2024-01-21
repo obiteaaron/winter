@@ -2,6 +2,7 @@ package tech.obiteaaron.winter.embed.rpc.executing;
 
 import com.google.common.reflect.AbstractInvocationHandler;
 import tech.obiteaaron.winter.embed.rpc.WinterConsumer;
+import tech.obiteaaron.winter.embed.rpc.WinterRpcBootstrap;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
@@ -14,16 +15,17 @@ public class ConsumerInvocationHandler extends AbstractInvocationHandler {
 
     WinterConsumer annotation;
 
-    ConsumerDispatcher consumerDispatcher;
+    WinterRpcBootstrap winterRpcBootstrap;
 
-    public ConsumerInvocationHandler(WinterConsumer annotation) {
+    public ConsumerInvocationHandler(WinterConsumer annotation, WinterRpcBootstrap winterRpcBootstrap) {
         this.annotation = annotation;
+        this.winterRpcBootstrap = winterRpcBootstrap;
     }
 
     @CheckForNull
     @Override
     protected Object handleInvocation(Object proxy, Method method, @Nullable Object[] args) throws Throwable {
-        Object result = consumerDispatcher.dispatch(proxy, method, args);
+        Object result = winterRpcBootstrap.getConsumerDispatcher().dispatch(proxy, method, args);
         return result;
     }
 

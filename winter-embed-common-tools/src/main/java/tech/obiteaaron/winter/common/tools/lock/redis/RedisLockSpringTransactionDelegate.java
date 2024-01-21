@@ -1,6 +1,5 @@
 package tech.obiteaaron.winter.common.tools.lock.redis;
 
-import org.springframework.core.Ordered;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import tech.obiteaaron.winter.common.tools.lock.Lock;
@@ -41,11 +40,6 @@ public class RedisLockSpringTransactionDelegate implements Lock {
                 @Override
                 public void afterCompletion(int status) {
                     lock.unlock();
-                }
-
-                @Override
-                public int getOrder() {
-                    return Ordered.LOWEST_PRECEDENCE;
                 }
             });
         } else {
