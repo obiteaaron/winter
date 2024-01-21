@@ -23,6 +23,19 @@ public class WinterRpcBootstrap {
     private ConsumerDispatcher consumerDispatcher;
 
     private int port;
+    /**
+     * 服务提供者默认支持的序列化类型，多个用逗号“,”隔开
+     */
+    private String defaultSerializerType = "hessian";
+    /**
+     * 服务提供者默认支持的序列化类型，多个用逗号“,”隔开
+     */
+    private String providerSerializerSupports = "hessian,json";
+
+    /**
+     * 服务消费者默认支持的序列化类型，多个用逗号“,”隔开
+     */
+    private String consumerSerializerSupports = "hessian,json";
 
     public void start() {
         vertxHttpServer.startHttpServer(port);

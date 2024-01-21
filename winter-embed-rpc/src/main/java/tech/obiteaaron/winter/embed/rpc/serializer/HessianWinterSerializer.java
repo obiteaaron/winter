@@ -25,6 +25,7 @@ public class HessianWinterSerializer implements WinterSerializer {
         try {
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             HessianOutput hessianOutput = new HessianOutput(byteArrayOutputStream);
+            hessianOutput.setSerializerFactory(HESSIAN_FACTORY.getSerializerFactory());
             hessianOutput.writeObject(object);
             hessianOutput.flush();
             return byteArrayOutputStream.toString();

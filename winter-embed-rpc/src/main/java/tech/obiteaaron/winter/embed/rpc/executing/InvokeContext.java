@@ -8,6 +8,7 @@ import lombok.Setter;
 public class InvokeContext {
 
     private String serviceName;
+
     private String methodName;
     /**
      * queryById(java.lang.String)
@@ -15,5 +16,7 @@ public class InvokeContext {
     private String methodSignature;
 
     private Object[] arguments;
+
+    private String serializerType;
 
 }
