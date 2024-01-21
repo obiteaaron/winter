@@ -23,10 +23,7 @@ import tech.obiteaaron.winter.embed.rpc.regesiter.ProviderConfig;
 import javax.annotation.Resource;
 import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 public class WinterRpcSpringBeanFactoryPostProcessor implements BeanFactoryPostProcessor, BeanPostProcessor {
@@ -138,9 +135,12 @@ public class WinterRpcSpringBeanFactoryPostProcessor implements BeanFactoryPostP
                     .interfaceName(anInterface.getName())
                     .interfaceImpl(bean)
                     .build();
-            winterRpcBootstrap.getRegisterManager().register(providerConfig);
+            // 延迟到 ContextRefreshedEvent 事件才注册，确保 bean 都正确初始化成功了，以确保能对外提供服务
+            providerConfigList.add(providerConfig);
         }
 
         return bean;
     }
+
+    static List<ProviderConfig> providerConfigList = new ArrayList<>();
 }

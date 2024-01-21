@@ -1,5 +1,6 @@
 package tech.obiteaaron.winter.embed.rpc.executing;
 
+import com.fasterxml.jackson.databind.JavaType;
 import io.vertx.core.http.HttpServerRequest;
 import lombok.Setter;
 import org.apache.commons.lang3.tuple.Pair;
@@ -8,6 +9,7 @@ import tech.obiteaaron.winter.embed.rpc.regesiter.RegisterManager;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.Map;
 
 public class ProviderDispatcher {
@@ -56,9 +58,23 @@ public class ProviderDispatcher {
             Method method = pair.getRight();
 
             Object[] arguments = invokeContext.getArguments();
+            // TODO 临时代码，要挪走
+            Object[] objects = new Object[arguments.length];
+            Type[] parameterTypes = method.getGenericParameterTypes();
+            int i = 0;
+            for (Object argument : arguments) {
+                if (argument == null) {
+                    objects[i++] = null;
+                    continue;
+                }
+                String jsonString = JsonUtil.toJsonString(argument);
+                JavaType javaType = JsonUtil.getTypeFactory().constructType(parameterTypes[i]);
+                Object o = JsonUtil.parseObject(jsonString, javaType);
+                objects[i++] = o;
+            }
 
             // TODO 加Filter
-            Object result = method.invoke(bean, arguments);
+            Object result = method.invoke(bean, objects);
             // TODO 序列化
             return JsonUtil.toJsonString(result);
         } catch (IllegalAccessException | InvocationTargetException e) {

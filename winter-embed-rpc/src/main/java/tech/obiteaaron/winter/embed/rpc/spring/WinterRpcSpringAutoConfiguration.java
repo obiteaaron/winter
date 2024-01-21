@@ -6,10 +6,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.SmartApplicationListener;
-import tech.obiteaaron.winter.embed.registercenter.impl.DefaultRegisterServiceImpl;
 import tech.obiteaaron.winter.embed.rpc.WinterRpcBootstrap;
 import tech.obiteaaron.winter.embed.rpc.executing.ConsumerDispatcher;
 import tech.obiteaaron.winter.embed.rpc.executing.ProviderDispatcher;
+import tech.obiteaaron.winter.embed.rpc.regesiter.ProviderConfig;
 import tech.obiteaaron.winter.embed.rpc.regesiter.RegisterManager;
 import tech.obiteaaron.winter.embed.rpc.server.VertxHttpServer;
 
@@ -40,7 +40,8 @@ public class WinterRpcSpringAutoConfiguration implements SmartApplicationListene
         providerDispatcher.setRegisterManager(registerManager);
         ConsumerDispatcher consumerDispatcher = new ConsumerDispatcher();
         consumerDispatcher.setRegisterManager(registerManager);
-        registerManager.setRegisterService(new DefaultRegisterServiceImpl());
+        // 避免直接依赖SpringBean，此处不赋值
+        registerManager.setRegisterService(null);
         WinterRpcBootstrap winterRpcBootstrap = new WinterRpcBootstrap();
         VertxHttpServer vertxHttpServer = new VertxHttpServer();
         vertxHttpServer.setProviderDispatcher(providerDispatcher);
@@ -63,6 +64,9 @@ public class WinterRpcSpringAutoConfiguration implements SmartApplicationListene
     public void onApplicationEvent(ApplicationEvent event) {
         if (atomicBoolean.compareAndSet(false, true)) {
             winterRpcBootstrapSpringInstance.start();
+            for (ProviderConfig providerConfig : WinterRpcSpringBeanFactoryPostProcessor.providerConfigList) {
+                winterRpcBootstrapSpringInstance.getRegisterManager().register(providerConfig);
+            }
         }
     }
 
