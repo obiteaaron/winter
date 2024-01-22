@@ -37,7 +37,7 @@ public class WinterRpcSpringAutoConfiguration implements SmartApplicationListene
         // 构造一下对象内的属性
         WinterRpcBootstrap winterRpcBootstrap = new WinterRpcBootstrap();
 
-        winterRpcBootstrap.setDefaultSerializerType("hessian");
+        winterRpcBootstrap.setDefaultSerializerType("json");
 
         RegisterManager registerManager = new RegisterManager();
         ProviderDispatcher providerDispatcher = new ProviderDispatcher();

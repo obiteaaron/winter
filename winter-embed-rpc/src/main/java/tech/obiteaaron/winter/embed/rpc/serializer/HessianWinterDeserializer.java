@@ -4,7 +4,6 @@ import com.caucho.hessian.io.HessianInput;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.ByteArrayInputStream;
-import java.lang.reflect.Type;
 
 @Slf4j
 public class HessianWinterDeserializer implements WinterDeserializer {
@@ -14,7 +13,7 @@ public class HessianWinterDeserializer implements WinterDeserializer {
     }
 
     @Override
-    public Object deserializer(String value, Type[] types) {
+    public Object deserializer(String value, boolean isArray, String[] types, String[] invocationParameterTypes) {
         try {
             ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(value.getBytes());
             HessianInput hessianInput = new HessianInput(byteArrayInputStream);

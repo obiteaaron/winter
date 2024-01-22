@@ -13,7 +13,6 @@ import tech.obiteaaron.winter.embed.rpc.serializer.WinterSerializeFactory;
 import tech.obiteaaron.winter.embed.rpc.serializer.WinterSerializer;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 import java.util.List;
 
 public class ConsumerDispatcher {
@@ -62,7 +61,7 @@ public class ConsumerDispatcher {
         String result = commonOkHttpClient.doPost(url, serializerResult);
         WinterDeserializer winterDeserializer = WinterSerializeFactory.getWinterDeserializer(serializerType);
         // 这里再想想怎么处理更好
-        Object deserializer = winterDeserializer.deserializer(result, new Type[]{method.getGenericReturnType()});
+        Object deserializer = winterDeserializer.deserializer(result, false, new String[]{method.getGenericReturnType().getTypeName()}, null);
         if (deserializer instanceof Object[]) {
             return ((Object[]) deserializer)[0];
         }
