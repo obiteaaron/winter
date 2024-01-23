@@ -16,4 +16,9 @@ public class ProviderConfig {
     Object interfaceImpl;
 
     String providerSerializerSupports;
+
+    String group;
+
+    String version;
+
 }

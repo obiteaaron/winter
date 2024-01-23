@@ -16,6 +16,15 @@ public @interface WinterProvider {
      * @return
      */
     String[] providerInterfaces() default {};
+    /**
+     * 分组
+     */
+    String group() default "default";
+
+    /**
+     * 版本
+     */
+    String version() default "1.0.0";
 
     /**
      * 自定义标签，可用于路由

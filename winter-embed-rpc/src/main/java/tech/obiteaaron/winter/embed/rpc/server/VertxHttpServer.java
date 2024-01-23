@@ -7,7 +7,7 @@ import io.vertx.core.http.HttpServerRequest;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import tech.obiteaaron.winter.common.tools.trace.Slf4jMdcUtil;
-import tech.obiteaaron.winter.embed.rpc.executing.ProviderDispatcher;
+import tech.obiteaaron.winter.embed.rpc.WinterRpcBootstrap;
 
 import java.nio.charset.StandardCharsets;
 
@@ -15,7 +15,7 @@ import java.nio.charset.StandardCharsets;
 public class VertxHttpServer {
 
     @Setter
-    private ProviderDispatcher providerDispatcher;
+    private WinterRpcBootstrap winterRpcBootstrap;
 
     /**
      * 需要确保Netty版本正确，否则可能会无法启动
@@ -45,7 +45,7 @@ public class VertxHttpServer {
         httpServerRequest.bodyHandler(body -> {
             try {
                 Slf4jMdcUtil.appendMdcForTrace(traceId);
-                String result = providerDispatcher.dispatch(httpServerRequest, body.toString(StandardCharsets.UTF_8));
+                String result = winterRpcBootstrap.getProviderDispatcher().dispatch(httpServerRequest, body.toString(StandardCharsets.UTF_8));
                 httpServerRequest.response()
                         .putHeader("content-type", "text/plain")
                         .end(result);

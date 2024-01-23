@@ -25,7 +25,7 @@ public class ConsumerInvocationHandler extends AbstractInvocationHandler {
     @CheckForNull
     @Override
     protected Object handleInvocation(Object proxy, Method method, @Nullable Object[] args) throws Throwable {
-        Object result = winterRpcBootstrap.getConsumerDispatcher().dispatch(proxy, method, args);
+        Object result = winterRpcBootstrap.getConsumerDispatcher().dispatch(proxy, method, args, annotation);
         return result;
     }
 

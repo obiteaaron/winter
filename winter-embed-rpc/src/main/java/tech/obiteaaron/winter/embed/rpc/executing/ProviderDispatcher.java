@@ -4,7 +4,7 @@ import io.vertx.core.http.HttpServerRequest;
 import lombok.Setter;
 import org.apache.commons.lang3.tuple.Pair;
 import tech.obiteaaron.winter.embed.registercenter.model.URL;
-import tech.obiteaaron.winter.embed.rpc.regesiter.RegisterManager;
+import tech.obiteaaron.winter.embed.rpc.WinterRpcBootstrap;
 import tech.obiteaaron.winter.embed.rpc.serializer.WinterDeserializer;
 import tech.obiteaaron.winter.embed.rpc.serializer.WinterSerializeFactory;
 import tech.obiteaaron.winter.embed.rpc.serializer.WinterSerializer;
@@ -17,7 +17,7 @@ import java.util.Map;
 public class ProviderDispatcher {
 
     @Setter
-    RegisterManager registerManager;
+    WinterRpcBootstrap winterRpcBootstrap;
 
     public String dispatch(HttpServerRequest httpServerRequest, String body) {
         try {
@@ -49,7 +49,7 @@ public class ProviderDispatcher {
             // JSON 特殊处理，二次序列化参数类型。影响性能，生产用hessian更好。
             String serviceName = url.getPath();
             String methodSignature = url.getParameterMap().get("methodSignature");
-            Map<String, Pair<Object, Method>> map = registerManager.getProviderMap().get(serviceName);
+            Map<String, Pair<Object, Method>> map = winterRpcBootstrap.getRegisterManager().getProviderMap().get(serviceName);
             if (map == null) {
                 throw new UnsupportedOperationException("bug no provider " + serviceName);
             }
@@ -84,7 +84,7 @@ public class ProviderDispatcher {
             String serviceName = invokeContext.getServiceName();
             String methodName = invokeContext.getMethodName();
             String methodSignature = invokeContext.getMethodSignature();
-            Map<String, Pair<Object, Method>> map = registerManager.getProviderMap().get(serviceName);
+            Map<String, Pair<Object, Method>> map = winterRpcBootstrap.getRegisterManager().getProviderMap().get(serviceName);
             Pair<Object, Method> pair = map.get(methodSignature);
             Object bean = pair.getLeft();
             Method method = pair.getRight();

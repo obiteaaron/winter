@@ -14,4 +14,8 @@ public class ConsumerConfig {
     String interfaceName;
 
     String consumerSerializerSupports;
+
+    String group;
+
+    String version;
 }

@@ -23,7 +23,10 @@ import tech.obiteaaron.winter.embed.rpc.regesiter.ProviderConfig;
 import javax.annotation.Resource;
 import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 public class WinterRpcSpringBeanFactoryPostProcessor implements BeanFactoryPostProcessor, BeanPostProcessor {
@@ -87,8 +90,10 @@ public class WinterRpcSpringBeanFactoryPostProcessor implements BeanFactoryPostP
         ConsumerConfig consumerConfig = ConsumerConfig.builder()
                 .interfaceClass(aClass)
                 .interfaceName(aClass.getName())
+                .version(annotation.version())
+                .group(annotation.group())
                 .build();
-        winterRpcBootstrap.getRegisterManager().subscribe(consumerConfig);
+        winterRpcBootstrap.getConsumerConfigList().add(consumerConfig);
     }
 
     private String generateConsumerBeanName(Class<?> aClass) {
@@ -105,14 +110,19 @@ public class WinterRpcSpringBeanFactoryPostProcessor implements BeanFactoryPostP
         Class<?> targetClass = AopUtils.getTargetClass(bean);
         WinterProvider annotation = targetClass.getAnnotation(WinterProvider.class);
         String[] providerInterfaces = null;
+        String version = null, group = null;
         if (annotation != null) {
             providerInterfaces = annotation.providerInterfaces();
+            version = annotation.version();
+            group = annotation.group();
         } else {
             Pair<String, Map<String, Object>> annotationAttributes = beanAnnotaionMap.get(beanName);
             if (annotationAttributes == null) {
                 return bean;
             }
             Map<String, Object> value = annotationAttributes.getValue();
+            version = (String) value.get("version");
+            group = (String) value.get("group");
             providerInterfaces = (String[]) value.get("providerInterfaces");
             if (providerInterfaces == null || providerInterfaces.length == 0) {
                 providerInterfaces = new String[]{annotationAttributes.getKey()};
@@ -134,13 +144,13 @@ public class WinterRpcSpringBeanFactoryPostProcessor implements BeanFactoryPostP
                     .interfaceClass(anInterface)
                     .interfaceName(anInterface.getName())
                     .interfaceImpl(bean)
+                    .version(version)
+                    .group(group)
                     .build();
             // 延迟到 ContextRefreshedEvent 事件才注册，确保 bean 都正确初始化成功了，以确保能对外提供服务
-            providerConfigList.add(providerConfig);
+            winterRpcBootstrap.getProviderConfigList().add(providerConfig);
         }
 
         return bean;
     }
-
-    static List<ProviderConfig> providerConfigList = new ArrayList<>();
 }

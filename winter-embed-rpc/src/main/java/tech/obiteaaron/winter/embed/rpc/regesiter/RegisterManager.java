@@ -5,42 +5,51 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.util.ReflectionUtils;
-import tech.obiteaaron.winter.common.tools.spring.SpringContextHolder;
 import tech.obiteaaron.winter.embed.registercenter.RegisterService;
 import tech.obiteaaron.winter.embed.registercenter.model.URL;
+import tech.obiteaaron.winter.embed.rpc.WinterRpcBootstrap;
+import tech.obiteaaron.winter.embed.rpc.constant.IpAddressUtil;
 import tech.obiteaaron.winter.embed.rpc.constant.MethodUtil;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class RegisterManager {
 
     @Setter
     RegisterService registerService;
 
+    @Setter
+    WinterRpcBootstrap winterRpcBootstrap;
+
     @Getter
     Map<String, Map<String, Pair<Object, Method>>> providerMap = new ConcurrentHashMap<>();
 
     public void register(ProviderConfig providerConfig) {
-        if (registerService == null) {
-            registerService = SpringContextHolder.applicationContext.getBean(RegisterService.class);
+        // 注册到注册中心
+        Map<String, String> parameterMap = ImmutableMap.of(
+                "version", providerConfig.getVersion(),
+                "group", providerConfig.getGroup(),
+                "type", "provider",
+                "methodSignatures", generatorAllMethodSignature(providerConfig));
+        if (winterRpcBootstrap.getLoadBalanceServer() != null) {
+            parameterMap = new HashMap<>(parameterMap);
+            parameterMap.put("loadBalanceServer", winterRpcBootstrap.getLoadBalanceServer());
         }
-        // TODO 注册到注册中心
         URL url = URL.builder()
-                .protocol(null)
-                .ip(null)
-                .port(0)
+                .protocol(winterRpcBootstrap.getHttpProtocol())
+                .ip(IpAddressUtil.getLocalIpv4ByNetCard())
+                .port(winterRpcBootstrap.getPort())
                 .path(providerConfig.getInterfaceName())
-                .parameterMap(ImmutableMap.of(
-                        "version", "1.0",
-                        "group", "default",
-                        "methodNames", "findById(java.lang.String)",
-                        "methodSignatures", "findById(java.lang.String)"))
+                .parameterMap(parameterMap)
                 .build();
-
         registerService.register(url);
+
         // 注册到本地
         ReflectionUtils.doWithMethods(providerConfig.getInterfaceClass(), method -> {
             String methodSignature = MethodUtil.generateMethodSignature(method);
@@ -56,8 +65,30 @@ public class RegisterManager {
         });
     }
 
+    private String generatorAllMethodSignature(ProviderConfig providerConfig) {
+        Class<?> interfaceClass = providerConfig.getInterfaceClass();
+        for (Method declaredMethod : interfaceClass.getDeclaredMethods()) {
+            MethodUtil.generateMethodSignature(declaredMethod);
+        }
+        return Arrays.stream(interfaceClass.getDeclaredMethods())
+                .map(MethodUtil::generateMethodSignature)
+                .collect(Collectors.joining(","));
+    }
+
     public void subscribe(ConsumerConfig consumerConfig) {
         // 注册一下
+        // 注册到注册中心
+        URL url = URL.builder()
+                .protocol(winterRpcBootstrap.getHttpProtocol())
+                .ip(IpAddressUtil.getLocalIpv4ByNetCard())
+                .port(winterRpcBootstrap.getPort())
+                .path(consumerConfig.getInterfaceName())
+                .parameterMap(ImmutableMap.of(
+                        "version", consumerConfig.getVersion(),
+                        "group", consumerConfig.getGroup(),
+                        "type", "consumer"))
+                .build();
+        registerService.register(url);
         // 然后再订阅一下
     }
 
@@ -73,13 +104,13 @@ public class RegisterManager {
         URL url = URL.builder()
                 .path(consumerConfig.getInterfaceName())
                 .parameterMap(ImmutableMap.of(
-                        "version", "1.0",
-                        "group", "default",
-                        "methodName", "findById(java.lang.String)",
-                        "methodSignature", "findById(java.lang.String)"))
+                        "version", consumerConfig.getVersion(),
+                        "group", consumerConfig.getGroup(),
+                        "type", "provider"))
                 .build();
         List<URL> urlList = registerService.lookup(url);
         // TODO 过滤方法，避免出现新上线的版本方法不兼容、不存在
-        return urlList;
+        List<URL> providerUrlList = urlList.stream().filter(item -> "provider".equals(item.getParameterMap().get("type"))).collect(Collectors.toList());
+        return providerUrlList;
     }
 }

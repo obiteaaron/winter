@@ -48,16 +48,18 @@ public class DefaultRegisterServiceImpl implements RegisterService {
         Assert.isTrue(create == 1, "register service failed");
     }
 
-    private String parseName(URL registerUrl) {
-        return registerUrl.getPath();
+    private String parseName(URL url) {
+        return url.getPath() + ":" + url.getParameterMap().get("version");
     }
 
-    private String parseGroup(URL registerUrl) {
-        return "register:" + registerUrl.getParameterMap().get("group");
+    private String parseGroup(URL url) {
+        // register:default:consumer
+        // register:default:provider
+        return "register:" + url.getParameterMap().get("group") + ":" + url.getParameterMap().get("type");
     }
 
-    private String parseContent(URL registerUrl) {
-        return JsonUtil.toJsonString(registerUrl);
+    private String parseContent(URL url) {
+        return JsonUtil.toJsonString(url);
     }
 
     @Override
