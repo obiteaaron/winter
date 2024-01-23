@@ -1,6 +1,7 @@
 package tech.obiteaaron.winter.embed.rpc;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 import tech.obiteaaron.winter.embed.rpc.executing.ConsumerDispatcher;
 import tech.obiteaaron.winter.embed.rpc.executing.ProviderDispatcher;
 import tech.obiteaaron.winter.embed.rpc.regesiter.ConsumerConfig;
@@ -11,6 +12,9 @@ import tech.obiteaaron.winter.embed.rpc.server.VertxHttpServer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiFunction;
 
 /**
  * 支持多实例，各用各的，多实例之间相互隔离，互不影响，各注册各的服务提供者和消费者。
@@ -18,10 +22,11 @@ import java.util.List;
  */
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class WinterRpcBootstrap {
+
+    public static final ConcurrentHashMap<String, WinterRpcBootstrap> INSTANCE_MAP = new ConcurrentHashMap<>();
+
+    private String name;
 
     private VertxHttpServer vertxHttpServer;
 
@@ -60,6 +65,27 @@ public class WinterRpcBootstrap {
     private List<ConsumerConfig> consumerConfigList = new ArrayList<>();
 
     private List<ProviderConfig> providerConfigList = new ArrayList<>();
+
+    private WinterRpcBootstrap(String name) {
+        this.name = name;
+    }
+
+    public static WinterRpcBootstrap instance() {
+        return instance("default");
+    }
+
+    public static WinterRpcBootstrap instance(String name) {
+        Objects.requireNonNull(name);
+        return INSTANCE_MAP.compute(name, new BiFunction<String, WinterRpcBootstrap, WinterRpcBootstrap>() {
+            @Override
+            public WinterRpcBootstrap apply(String s, WinterRpcBootstrap winterRpcBootstrap) {
+                if (winterRpcBootstrap != null) {
+                    return winterRpcBootstrap;
+                }
+                return new WinterRpcBootstrap(name);
+            }
+        });
+    }
 
     public void init() {
 

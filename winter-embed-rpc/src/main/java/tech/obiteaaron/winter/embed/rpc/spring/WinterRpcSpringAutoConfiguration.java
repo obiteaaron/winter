@@ -1,5 +1,6 @@
 package tech.obiteaaron.winter.embed.rpc.spring;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
@@ -31,6 +32,9 @@ public class WinterRpcSpringAutoConfiguration implements SmartApplicationListene
     @Value("${tech.obiteaaron.winter.embed.rpc.https:false}")
     private boolean httpsEnable = false;
 
+    @Value("${tech.obiteaaron.winter.embed.rpc.https:}")
+    private String loadBalanceServer = null;
+
     private final AtomicBoolean atomicBoolean = new AtomicBoolean();
 
     private WinterRpcBootstrap winterRpcBootstrap;
@@ -45,7 +49,7 @@ public class WinterRpcSpringAutoConfiguration implements SmartApplicationListene
 
     public WinterRpcBootstrap winterRpcBootstrap() {
         // 构造一下对象内的属性
-        WinterRpcBootstrap winterRpcBootstrap = new WinterRpcBootstrap();
+        WinterRpcBootstrap winterRpcBootstrap = WinterRpcBootstrap.instance();
 
         winterRpcBootstrap.setDefaultSerializerType("json");
 
@@ -68,6 +72,7 @@ public class WinterRpcSpringAutoConfiguration implements SmartApplicationListene
         winterRpcBootstrap.getProviderRouters().add(new RoundRobinProviderRouterImpl());
         winterRpcBootstrap.setPort(port);
         winterRpcBootstrap.setHttpsEnable(httpsEnable);
+        winterRpcBootstrap.setLoadBalanceServer(StringUtils.trimToNull(loadBalanceServer));
 
         return winterRpcBootstrap;
     }
