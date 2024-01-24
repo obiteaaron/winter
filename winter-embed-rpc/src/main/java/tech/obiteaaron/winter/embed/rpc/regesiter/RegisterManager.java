@@ -108,7 +108,7 @@ public class RegisterManager {
                         "type", "provider"))
                 .build();
         List<URL> urlList = registerService.lookup(url);
-        // TODO 过滤方法，避免出现新上线的版本方法不兼容、不存在
+        // group 和 version 在查询的时候直接就过滤掉了
         List<URL> providerUrlList = urlList.stream().filter(item -> "provider".equals(item.getParameterMap().get("type"))).collect(Collectors.toList());
         return providerUrlList;
     }

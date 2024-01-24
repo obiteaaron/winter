@@ -95,7 +95,6 @@ public final class CommonOkHttpClient {
     }
 
     private String doExecute(Request request) {
-        // TODO 增加埋点
         try (Response response = okHttpClient.newCall(request).execute()) {
             if (!response.isSuccessful()) {
                 log.error("OkHttp_Failed {}", JsonUtil.toJsonString(response));

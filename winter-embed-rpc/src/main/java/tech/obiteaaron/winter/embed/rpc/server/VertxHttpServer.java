@@ -54,7 +54,7 @@ public class VertxHttpServer {
                 log.error("VertxHttpServer Request Exception", t);
                 httpServerRequest.response()
                         .putHeader("content-type", "text/plain")
-                        .end("FAILED");
+                        .end("FAILED:" + t.toString());
             } finally {
                 Slf4jMdcUtil.clearMdcComplete();
             }

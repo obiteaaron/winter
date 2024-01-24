@@ -32,26 +32,33 @@ public class WinterSerializeFactory {
     }
 
     public static WinterSerializer getWinterSerializer(String type) {
-        // TODO 单例
+        // 单例
         switch (type) {
             case "hessian":
-                return new HessianWinterSerializer();
+                return SerializerHolder.hessianWinterSerializer;
             case "json":
-                return new JsonWinterSerializer();
+                return SerializerHolder.jsonWinterSerializer;
             default:
                 throw new UnsupportedOperationException(type);
         }
     }
 
     public static WinterDeserializer getWinterDeserializer(String type) {
-        // TODO 单例
+        // 单例
         switch (type) {
             case "hessian":
-                return new HessianWinterDeserializer();
+                return SerializerHolder.hessianWinterDeserializer;
             case "json":
-                return new JsonWinterDeserializer();
+                return SerializerHolder.jsonWinterDeserializer;
             default:
                 throw new UnsupportedOperationException(type);
         }
+    }
+
+    private static class SerializerHolder {
+        static final HessianWinterSerializer hessianWinterSerializer = new HessianWinterSerializer();
+        static final JsonWinterSerializer jsonWinterSerializer = new JsonWinterSerializer();
+        static final HessianWinterDeserializer hessianWinterDeserializer = new HessianWinterDeserializer();
+        static final JsonWinterDeserializer jsonWinterDeserializer = new JsonWinterDeserializer();
     }
 }

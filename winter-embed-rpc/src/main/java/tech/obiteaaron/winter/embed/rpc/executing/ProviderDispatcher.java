@@ -2,6 +2,7 @@ package tech.obiteaaron.winter.embed.rpc.executing;
 
 import io.vertx.core.http.HttpServerRequest;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import tech.obiteaaron.winter.embed.registercenter.model.URL;
 import tech.obiteaaron.winter.embed.rpc.WinterRpcBootstrap;
@@ -13,6 +14,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 
 public class ProviderDispatcher {
 
@@ -30,15 +32,13 @@ public class ProviderDispatcher {
                     .parameterMap(URL.getParameterMap(httpServerRequest.query()))
                     .build();
             // 序列化方式
-            String serializerType = httpServerRequest.getParam("serializerType");
+            String serializerType = StringUtils.firstNonBlank(httpServerRequest.getParam("serializerType"), winterRpcBootstrap.getDefaultSerializerType());
             InvokeContext invokeContext = deserialize(url, body, serializerType);
             Object o = doExecute(invokeContext);
             // 序列化
             return serialize(o, serializerType);
         } catch (Exception e) {
             throw e instanceof RuntimeException ? (RuntimeException) e : new RuntimeException(e);
-        } finally {
-            // TODO 监控
         }
     }
 
@@ -47,15 +47,15 @@ public class ProviderDispatcher {
         String[] typeArray = null;
         if ("json".equals(serializerType)) {
             // JSON 特殊处理，二次序列化参数类型。影响性能，生产用hessian更好。
-            String serviceName = url.getPath();
-            String methodSignature = url.getParameterMap().get("methodSignature");
+            String serviceName = Objects.requireNonNull(StringUtils.trimToNull(url.getPath()), "serviceName cannot be null");
+            String methodSignature = Objects.requireNonNull(StringUtils.trimToNull(url.getParameterMap().get("methodSignature")), "methodSignature cannot be null");
             Map<String, Pair<Object, Method>> map = winterRpcBootstrap.getRegisterManager().getProviderMap().get(serviceName);
             if (map == null) {
-                throw new UnsupportedOperationException("bug no provider " + serviceName);
+                throw new UnsupportedOperationException("NoProvider " + serviceName);
             }
             Pair<Object, Method> pair = map.get(methodSignature);
             if (pair == null) {
-                throw new UnsupportedOperationException("bug no provider " + serviceName + "#" + methodSignature);
+                throw new UnsupportedOperationException("NoProvider " + serviceName + "#" + methodSignature);
             }
             Object bean = pair.getLeft();
             Method method = pair.getRight();
@@ -68,6 +68,7 @@ public class ProviderDispatcher {
                     }).toArray(String[]::new);
         }
         WinterDeserializer winterDeserializer = WinterSerializeFactory.getWinterDeserializer(serializerType);
+        Objects.requireNonNull(StringUtils.trimToNull(body), "requestBody cannot be null");
         InvokeContext invokeContext = (InvokeContext) winterDeserializer.deserializer(body, false, new String[]{InvokeContext.class.getCanonicalName()}, typeArray);
 
         return invokeContext;
@@ -81,9 +82,8 @@ public class ProviderDispatcher {
 
     private Object doExecute(InvokeContext invokeContext) {
         try {
-            String serviceName = invokeContext.getServiceName();
-            String methodName = invokeContext.getMethodName();
-            String methodSignature = invokeContext.getMethodSignature();
+            String serviceName = Objects.requireNonNull(StringUtils.trimToNull(invokeContext.getServiceName()), "serviceName cannot be null");
+            String methodSignature = Objects.requireNonNull(StringUtils.trimToNull(invokeContext.getMethodSignature()), "methodSignature cannot be null");
             Map<String, Pair<Object, Method>> map = winterRpcBootstrap.getRegisterManager().getProviderMap().get(serviceName);
             Pair<Object, Method> pair = map.get(methodSignature);
             Object bean = pair.getLeft();
@@ -96,8 +96,6 @@ public class ProviderDispatcher {
             return result;
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
-        } finally {
-            // TODO 监控
         }
     }
 }

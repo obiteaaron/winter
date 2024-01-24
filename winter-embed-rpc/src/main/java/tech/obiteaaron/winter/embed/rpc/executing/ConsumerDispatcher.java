@@ -77,6 +77,7 @@ public class ConsumerDispatcher {
                 .build();
         String invokeUrl = url.toString();
         // okhttp POST调用 vertx的端口
+        // TODO 支持调用后短轮询获取结果，以突破网关、接口的timeout限制
         String result = commonOkHttpClient.doPost(invokeUrl, serializerResult);
         WinterDeserializer winterDeserializer = WinterSerializeFactory.getWinterDeserializer(serializerType);
         // 这里再想想怎么处理更好

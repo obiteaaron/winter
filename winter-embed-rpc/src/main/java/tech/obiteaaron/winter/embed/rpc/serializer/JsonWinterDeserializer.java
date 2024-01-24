@@ -49,9 +49,11 @@ public class JsonWinterDeserializer implements WinterDeserializer {
 
                 // 特殊处理，二次序列化参数类型
                 Object[] arguments = invokeContext.getArguments();
-                String[] argumentTypes = invocationParameterTypes;
-                Object deserializer = this.deserializer(JsonUtil.toJsonString(arguments), true, argumentTypes, null);
-                invokeContext.setArguments((Object[]) deserializer);
+                if (arguments != null) {
+                    String[] argumentTypes = invocationParameterTypes;
+                    Object deserializer = this.deserializer(JsonUtil.toJsonString(arguments), true, argumentTypes, null);
+                    invokeContext.setArguments((Object[]) deserializer);
+                }
                 return invokeContext;
             } else {
                 return JsonUtil.parseObject(value, javaType);
