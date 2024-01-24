@@ -1,8 +1,7 @@
 package tech.obiteaaron.winter.embed.rpc.spring;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
@@ -21,19 +20,11 @@ import tech.obiteaaron.winter.embed.rpc.server.VertxHttpServer;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@EnableConfigurationProperties(WinterRpcProperties.class)
 @Configuration
 public class WinterRpcSpringAutoConfiguration implements SmartApplicationListener, ApplicationContextAware {
 
     ApplicationContext applicationContext;
-
-    @Value("${tech.obiteaaron.winter.embed.rpc.port:7080}")
-    private int port = 7080;
-
-    @Value("${tech.obiteaaron.winter.embed.rpc.https:false}")
-    private boolean httpsEnable = false;
-
-    @Value("${tech.obiteaaron.winter.embed.rpc.https:}")
-    private String loadBalanceServer = null;
 
     private final AtomicBoolean atomicBoolean = new AtomicBoolean();
 
@@ -42,39 +33,9 @@ public class WinterRpcSpringAutoConfiguration implements SmartApplicationListene
     @Bean
     public WinterRpcSpringBeanFactoryPostProcessor winterRpcSpringBeanFactoryPostProcessor() {
         WinterRpcSpringBeanFactoryPostProcessor bean = new WinterRpcSpringBeanFactoryPostProcessor();
-        winterRpcBootstrap = winterRpcBootstrap();
+        winterRpcBootstrap = WinterRpcBootstrap.instance();
         bean.setWinterRpcBootstrap(winterRpcBootstrap);
         return bean;
-    }
-
-    public WinterRpcBootstrap winterRpcBootstrap() {
-        // 构造一下对象内的属性
-        WinterRpcBootstrap winterRpcBootstrap = WinterRpcBootstrap.instance();
-
-        winterRpcBootstrap.setDefaultSerializerType("json");
-
-        RegisterManager registerManager = new RegisterManager();
-        // 避免直接依赖SpringBean，此处不赋值
-        registerManager.setRegisterService(null);
-        registerManager.setWinterRpcBootstrap(winterRpcBootstrap);
-        ProviderDispatcher providerDispatcher = new ProviderDispatcher();
-        providerDispatcher.setWinterRpcBootstrap(winterRpcBootstrap);
-        ConsumerDispatcher consumerDispatcher = new ConsumerDispatcher();
-        consumerDispatcher.setWinterRpcBootstrap(winterRpcBootstrap);
-        consumerDispatcher.setCommonOkHttpClient(OkHttpClientFactory.commonOkHttpClient());
-        VertxHttpServer vertxHttpServer = new VertxHttpServer();
-        vertxHttpServer.setWinterRpcBootstrap(winterRpcBootstrap);
-        winterRpcBootstrap.setVertxHttpServer(vertxHttpServer);
-        winterRpcBootstrap.setRegisterManager(registerManager);
-        winterRpcBootstrap.setProviderDispatcher(providerDispatcher);
-        winterRpcBootstrap.setConsumerDispatcher(consumerDispatcher);
-
-        winterRpcBootstrap.getProviderRouters().add(new RoundRobinProviderRouterImpl());
-        winterRpcBootstrap.setPort(port);
-        winterRpcBootstrap.setHttpsEnable(httpsEnable);
-        winterRpcBootstrap.setLoadBalanceServer(StringUtils.trimToNull(loadBalanceServer));
-
-        return winterRpcBootstrap;
     }
 
     @Override
@@ -86,8 +47,26 @@ public class WinterRpcSpringAutoConfiguration implements SmartApplicationListene
     public void onApplicationEvent(ApplicationEvent event) {
         if (atomicBoolean.compareAndSet(false, true)) {
             // 延迟赋值
+            WinterRpcProperties winterRpcProperties = applicationContext.getBean(WinterRpcProperties.class);
             RegisterService registerService = applicationContext.getBean(RegisterService.class);
-            winterRpcBootstrap.getRegisterManager().setRegisterService(registerService);
+
+            RegisterManager registerManager = new RegisterManager();
+            registerManager.setRegisterService(registerService);
+            ProviderDispatcher providerDispatcher = new ProviderDispatcher();
+            ConsumerDispatcher consumerDispatcher = new ConsumerDispatcher();
+            consumerDispatcher.setCommonOkHttpClient(OkHttpClientFactory.commonOkHttpClient());
+            VertxHttpServer vertxHttpServer = new VertxHttpServer();
+
+            winterRpcBootstrap.vertxHttpServer(vertxHttpServer)
+                    .registerManager(registerManager)
+                    .providerDispatcher(providerDispatcher)
+                    .consumerDispatcher(consumerDispatcher)
+                    .defaultSerializerType("json")
+                    .providerRouter(new RoundRobinProviderRouterImpl())
+                    .ipPrefix(winterRpcProperties.getIpPrefix())
+                    .port(winterRpcProperties.getPort())
+                    .httpsEnable(winterRpcProperties.isHttpsEnable())
+                    .loadBalanceServer(winterRpcProperties.getLoadBalanceServer());
             // 启动
             winterRpcBootstrap.start();
         }
@@ -107,4 +86,5 @@ public class WinterRpcSpringAutoConfiguration implements SmartApplicationListene
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
+
 }

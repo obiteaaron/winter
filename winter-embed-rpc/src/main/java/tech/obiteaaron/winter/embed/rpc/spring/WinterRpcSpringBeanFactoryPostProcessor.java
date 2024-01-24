@@ -93,7 +93,7 @@ public class WinterRpcSpringBeanFactoryPostProcessor implements BeanFactoryPostP
                 .version(annotation.version())
                 .group(annotation.group())
                 .build();
-        winterRpcBootstrap.getConsumerConfigList().add(consumerConfig);
+        winterRpcBootstrap.consumerConfig(consumerConfig);
     }
 
     private String generateConsumerBeanName(Class<?> aClass) {
@@ -148,7 +148,7 @@ public class WinterRpcSpringBeanFactoryPostProcessor implements BeanFactoryPostP
                     .group(group)
                     .build();
             // 延迟到 ContextRefreshedEvent 事件才注册，确保 bean 都正确初始化成功了，以确保能对外提供服务
-            winterRpcBootstrap.getProviderConfigList().add(providerConfig);
+            winterRpcBootstrap.providerConfig(providerConfig);
         }
 
         return bean;

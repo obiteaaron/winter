@@ -8,7 +8,6 @@ import org.springframework.util.ReflectionUtils;
 import tech.obiteaaron.winter.embed.registercenter.RegisterService;
 import tech.obiteaaron.winter.embed.registercenter.model.URL;
 import tech.obiteaaron.winter.embed.rpc.WinterRpcBootstrap;
-import tech.obiteaaron.winter.embed.rpc.constant.IpAddressUtil;
 import tech.obiteaaron.winter.embed.rpc.constant.MethodUtil;
 
 import java.lang.reflect.Method;
@@ -43,7 +42,7 @@ public class RegisterManager {
         }
         URL url = URL.builder()
                 .protocol(winterRpcBootstrap.getHttpProtocol())
-                .ip(IpAddressUtil.getLocalIpv4ByNetCard())
+                .ip(winterRpcBootstrap.getBindHost())
                 .port(winterRpcBootstrap.getPort())
                 .path(providerConfig.getInterfaceName())
                 .parameterMap(parameterMap)
@@ -80,7 +79,7 @@ public class RegisterManager {
         // 注册到注册中心
         URL url = URL.builder()
                 .protocol(winterRpcBootstrap.getHttpProtocol())
-                .ip(IpAddressUtil.getLocalIpv4ByNetCard())
+                .ip(winterRpcBootstrap.getBindHost())
                 .port(winterRpcBootstrap.getPort())
                 .path(consumerConfig.getInterfaceName())
                 .parameterMap(ImmutableMap.of(

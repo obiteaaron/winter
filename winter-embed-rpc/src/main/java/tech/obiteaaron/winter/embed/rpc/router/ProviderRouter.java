@@ -1,6 +1,7 @@
 package tech.obiteaaron.winter.embed.rpc.router;
 
 import tech.obiteaaron.winter.embed.registercenter.model.URL;
+import tech.obiteaaron.winter.embed.rpc.WinterRpcBootstrap;
 import tech.obiteaaron.winter.embed.rpc.regesiter.ConsumerConfig;
 
 import java.util.List;
@@ -15,4 +16,7 @@ public interface ProviderRouter {
      * @return 返回的是列表，可以走多个路由规则，最终路由出结果即可
      */
     List<URL> resolve(ConsumerConfig consumerConfig, List<URL> providerList);
+
+    void setWinterRpcBootstrap(WinterRpcBootstrap winterRpcBootstrap);
+
 }
