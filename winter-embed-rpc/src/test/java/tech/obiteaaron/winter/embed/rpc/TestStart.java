@@ -5,6 +5,8 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import tech.obiteaaron.winter.common.tools.http.CommonOkHttpClient;
+import tech.obiteaaron.winter.common.tools.http.OkHttpClientFactory;
 
 import java.util.concurrent.TimeUnit;
 
@@ -20,5 +22,13 @@ public class TestStart {
         testClient.invokeService();
         System.out.println();
         TimeUnit.MINUTES.sleep(10);
+    }
+
+    @Test
+    public void invokeServiceByHttp() throws InterruptedException {
+        CommonOkHttpClient commonOkHttpClient = OkHttpClientFactory.commonOkHttpClient();
+        String s = commonOkHttpClient.doPost("http://127.0.0.1:8080/tech.obiteaaron.winter.embed.rpc.TestService?serializerType=json&methodSignature=findById(java.lang.String)",
+                "{\"serviceName\":\"tech.obiteaaron.winter.embed.rpc.TestService\",\"methodSignature\":\"findById(java.lang.String)\",\"arguments\":[null]}");
+        System.out.println(s);
     }
 }
