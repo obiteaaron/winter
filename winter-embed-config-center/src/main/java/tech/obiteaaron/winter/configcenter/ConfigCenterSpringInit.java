@@ -23,6 +23,10 @@ public class ConfigCenterSpringInit implements ApplicationContextAware, SmartApp
     private static final AtomicBoolean INITIALIZED = new AtomicBoolean();
     private static ApplicationContext applicationContext;
 
+    /**
+     * 注意时机，建议所有应用都在 {@link ContextRefreshedEvent} 事件之后才开始，此时基本可以确保应用正常起来了。
+     * 这里是最高优先级，依赖配置项的自动启动项，确保优先级低一点即可。
+     */
     @Override
     public int getOrder() {
         return Ordered.HIGHEST_PRECEDENCE;

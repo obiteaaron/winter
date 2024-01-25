@@ -5,10 +5,12 @@ import org.apache.commons.lang3.StringUtils;
 import tech.obiteaaron.winter.embed.rpc.constant.IpAddressUtil;
 import tech.obiteaaron.winter.embed.rpc.executing.ConsumerDispatcher;
 import tech.obiteaaron.winter.embed.rpc.executing.ProviderDispatcher;
+import tech.obiteaaron.winter.embed.rpc.filter.RpcFilter;
 import tech.obiteaaron.winter.embed.rpc.regesiter.ConsumerConfig;
 import tech.obiteaaron.winter.embed.rpc.regesiter.ProviderConfig;
 import tech.obiteaaron.winter.embed.rpc.regesiter.RegisterManager;
 import tech.obiteaaron.winter.embed.rpc.router.ProviderRouter;
+import tech.obiteaaron.winter.embed.rpc.scheduler.ProviderWatchDog;
 import tech.obiteaaron.winter.embed.rpc.server.VertxHttpServer;
 
 import java.util.ArrayList;
@@ -63,11 +65,15 @@ public class WinterRpcBootstrap {
 
     private ConsumerDispatcher consumerDispatcher;
 
+    private ProviderWatchDog providerWatchDog;
+
+    private List<RpcFilter> rpcFilters;
+
     private List<ProviderRouter> providerRouters = new ArrayList<>();
 
-    private List<ConsumerConfig> consumerConfigList = new ArrayList<>();
+    private List<ConsumerConfig> consumerConfigs = new ArrayList<>();
 
-    private List<ProviderConfig> providerConfigList = new ArrayList<>();
+    private List<ProviderConfig> providerConfigs = new ArrayList<>();
 
     private WinterRpcBootstrap(String name) {
         this.name = name;
@@ -98,15 +104,9 @@ public class WinterRpcBootstrap {
         // 先启动监听服务
         vertxHttpServer.startHttpServer(port);
 
-        // 需要WatchDog
         // 真正注册
-        for (ProviderConfig providerConfig : providerConfigList) {
-            getRegisterManager().register(providerConfig);
-        }
-        // 真正注册
-        for (ConsumerConfig consumerConfig : consumerConfigList) {
-            getRegisterManager().subscribe(consumerConfig);
-        }
+        // 启动服务注册者的心跳WatchDog
+        providerWatchDog.start();
     }
 
     public String getHttpProtocol() {
@@ -169,6 +169,20 @@ public class WinterRpcBootstrap {
         this.consumerDispatcher.setWinterRpcBootstrap(this);
     }
 
+    public void setProviderWatchDog(ProviderWatchDog providerWatchDog) {
+        this.providerWatchDog = providerWatchDog;
+        this.providerWatchDog.setWinterRpcBootstrap(this);
+    }
+
+    public void setRpcFilters(List<RpcFilter> rpcFilters) {
+        this.rpcFilters = rpcFilters;
+        if (this.rpcFilters != null) {
+            for (RpcFilter rpcFilter : this.rpcFilters) {
+                rpcFilter.setWinterRpcBootstrap(this);
+            }
+        }
+    }
+
     public void setProviderRouters(List<ProviderRouter> providerRouters) {
         this.providerRouters = providerRouters;
         if (this.providerRouters != null) {
@@ -178,12 +192,12 @@ public class WinterRpcBootstrap {
         }
     }
 
-    public void setConsumerConfigList(List<ConsumerConfig> consumerConfigList) {
-        this.consumerConfigList = consumerConfigList;
+    public void setConsumerConfigs(List<ConsumerConfig> consumerConfigs) {
+        this.consumerConfigs = consumerConfigs;
     }
 
-    public void setProviderConfigList(List<ProviderConfig> providerConfigList) {
-        this.providerConfigList = providerConfigList;
+    public void setProviderConfigs(List<ProviderConfig> providerConfigs) {
+        this.providerConfigs = providerConfigs;
     }
 
     public WinterRpcBootstrap name(String name) {
@@ -208,6 +222,25 @@ public class WinterRpcBootstrap {
 
     public WinterRpcBootstrap consumerDispatcher(ConsumerDispatcher consumerDispatcher) {
         this.setConsumerDispatcher(consumerDispatcher);
+        return this;
+    }
+
+
+    public WinterRpcBootstrap providerWatchDog(ProviderWatchDog providerWatchDog) {
+        this.setProviderWatchDog(providerWatchDog);
+        return this;
+    }
+
+    public WinterRpcBootstrap rpcFilter(RpcFilter rpcFilter) {
+        if (this.rpcFilters == null) {
+            this.rpcFilters = new ArrayList<>();
+        }
+        this.rpcFilters.add(rpcFilter);
+        return this;
+    }
+
+    public WinterRpcBootstrap rpcFilters(List<RpcFilter> rpcFilters) {
+        this.setRpcFilters(rpcFilters);
         return this;
     }
 
@@ -260,28 +293,28 @@ public class WinterRpcBootstrap {
     }
 
     public WinterRpcBootstrap consumerConfig(ConsumerConfig consumerConfig) {
-        if (this.consumerConfigList == null) {
-            this.consumerConfigList = new ArrayList<>();
+        if (this.consumerConfigs == null) {
+            this.consumerConfigs = new ArrayList<>();
         }
-        this.consumerConfigList.add(Objects.requireNonNull(consumerConfig));
+        this.consumerConfigs.add(Objects.requireNonNull(consumerConfig));
         return this;
     }
 
     public WinterRpcBootstrap consumerConfigList(List<ConsumerConfig> consumerConfigList) {
-        this.setConsumerConfigList(consumerConfigList);
+        this.setConsumerConfigs(consumerConfigList);
         return this;
     }
 
     public WinterRpcBootstrap providerConfig(ProviderConfig providerConfig) {
-        if (this.providerConfigList == null) {
-            this.providerConfigList = new ArrayList<>();
+        if (this.providerConfigs == null) {
+            this.providerConfigs = new ArrayList<>();
         }
-        this.providerConfigList.add(Objects.requireNonNull(providerConfig));
+        this.providerConfigs.add(Objects.requireNonNull(providerConfig));
         return this;
     }
 
     public WinterRpcBootstrap providerConfigList(List<ProviderConfig> providerConfigList) {
-        this.setProviderConfigList(providerConfigList);
+        this.setProviderConfigs(providerConfigList);
         return this;
     }
 }

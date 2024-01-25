@@ -13,6 +13,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * 存储管理器，未来增加扩展点，可以直接替换为其他存储实现。
+ * 如有必要，也可以采用手动初始化的方式进行替换。
+ */
 @SuppressWarnings({"SqlNoDataSourceInspection", "SqlDialectInspection"})
 final class ConfigDatabaseRepository {
 

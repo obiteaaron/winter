@@ -19,6 +19,7 @@ public class TestStart {
 
     @Test
     public void invokeService() throws InterruptedException {
+        TimeUnit.SECONDS.sleep(5);
         testClient.invokeService();
         System.out.println();
         TimeUnit.MINUTES.sleep(10);

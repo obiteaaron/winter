@@ -14,10 +14,17 @@ import tech.obiteaaron.winter.embed.registercenter.RegisterService;
 import tech.obiteaaron.winter.embed.rpc.WinterRpcBootstrap;
 import tech.obiteaaron.winter.embed.rpc.executing.ConsumerDispatcher;
 import tech.obiteaaron.winter.embed.rpc.executing.ProviderDispatcher;
+import tech.obiteaaron.winter.embed.rpc.filter.LoggingRpcFilter;
+import tech.obiteaaron.winter.embed.rpc.filter.MonitorRpcFilter;
+import tech.obiteaaron.winter.embed.rpc.filter.RpcFilter;
+import tech.obiteaaron.winter.embed.rpc.filter.TracingRpcFilter;
 import tech.obiteaaron.winter.embed.rpc.regesiter.RegisterManager;
 import tech.obiteaaron.winter.embed.rpc.router.RoundRobinProviderRouterImpl;
+import tech.obiteaaron.winter.embed.rpc.scheduler.ProviderWatchDog;
 import tech.obiteaaron.winter.embed.rpc.server.VertxHttpServer;
 
+import java.util.ArrayList;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @EnableConfigurationProperties(WinterRpcProperties.class)
@@ -50,6 +57,7 @@ public class WinterRpcSpringAutoConfiguration implements SmartApplicationListene
             WinterRpcProperties winterRpcProperties = applicationContext.getBean(WinterRpcProperties.class);
             RegisterService registerService = applicationContext.getBean(RegisterService.class);
 
+            // TODO 这里的所有Bean，都可以从Spring里面获取，如果有，则覆盖new的，这依赖于接口，得先修改为面向接口
             RegisterManager registerManager = new RegisterManager();
             registerManager.setRegisterService(registerService);
             ProviderDispatcher providerDispatcher = new ProviderDispatcher();
@@ -57,12 +65,20 @@ public class WinterRpcSpringAutoConfiguration implements SmartApplicationListene
             consumerDispatcher.setCommonOkHttpClient(OkHttpClientFactory.commonOkHttpClient());
             VertxHttpServer vertxHttpServer = new VertxHttpServer();
 
+            // 扩展支持自定义RpcFilter
+            Map<String, RpcFilter> beansOfType = applicationContext.getBeansOfType(RpcFilter.class);
+
             winterRpcBootstrap.vertxHttpServer(vertxHttpServer)
                     .registerManager(registerManager)
                     .providerDispatcher(providerDispatcher)
                     .consumerDispatcher(consumerDispatcher)
+                    .providerWatchDog(new ProviderWatchDog())
                     .defaultSerializerType("json")
                     .providerRouter(new RoundRobinProviderRouterImpl())
+                    .rpcFilters(new ArrayList<>(beansOfType.values()))
+                    .rpcFilter(new LoggingRpcFilter())
+                    .rpcFilter(new TracingRpcFilter())
+                    .rpcFilter(new MonitorRpcFilter())
                     .ipPrefix(winterRpcProperties.getIpPrefix())
                     .port(winterRpcProperties.getPort())
                     .httpsEnable(winterRpcProperties.isHttpsEnable())

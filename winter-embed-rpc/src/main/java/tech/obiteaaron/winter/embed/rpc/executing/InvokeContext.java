@@ -7,16 +7,20 @@ import lombok.Setter;
 @Setter
 public class InvokeContext {
 
-    private String serviceName;
+    private String applicationName;
 
-    private String methodName;
+    private String traceId;
+
+    private String serviceName;
     /**
      * queryById(java.lang.String)
      */
     private String methodSignature;
 
+    private String serializerType;
+
     private Object[] arguments;
 
-    private String serializerType;
+    private Object result;
 
 }

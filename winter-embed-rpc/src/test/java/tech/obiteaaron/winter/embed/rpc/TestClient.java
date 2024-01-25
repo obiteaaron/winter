@@ -5,6 +5,7 @@ import org.junit.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+import tech.obiteaaron.winter.common.tools.trace.Slf4jMdcUtil;
 
 import java.util.List;
 
@@ -21,6 +22,7 @@ public class TestClient {
     private TestService testService2;
 
     public void invokeService() throws InterruptedException {
+        Slf4jMdcUtil.appendMdcForNew();
         Assert.assertNotEquals(testService2, testService);
         {
             User byId = testService.findById("1");

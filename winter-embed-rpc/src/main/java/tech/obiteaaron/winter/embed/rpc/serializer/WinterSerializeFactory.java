@@ -28,7 +28,8 @@ public class WinterSerializeFactory {
                 return serializer;
             }
         }
-        return null;
+        // 兜底用默认的
+        return defaultSerializer;
     }
 
     public static WinterSerializer getWinterSerializer(String type) {

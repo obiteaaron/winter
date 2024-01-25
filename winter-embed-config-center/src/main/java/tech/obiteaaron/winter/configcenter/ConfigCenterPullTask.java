@@ -25,7 +25,9 @@ final class ConfigCenterPullTask {
     void autoPull() {
         Runnable runnable = () -> {
             try {
-                log.info("ConfigCenter auto pull starting...");
+                if (log.isDebugEnabled()) {
+                    log.debug("ConfigCenter auto pull starting...");
+                }
                 Date startDate = new Date();
                 List<Config> deltaConfigs = null;
                 if (lastPullDate == null) {
@@ -35,19 +37,23 @@ final class ConfigCenterPullTask {
                 }
                 int effectNum = ConfigCenterInner.mergeDeltaConfigAndTriggerListener(deltaConfigs);
                 if (!deltaConfigs.isEmpty() || effectNum > 0) {
-                    log.info("ConfigCenter config changed, delta={}, effectNum={}", deltaConfigs.size(), effectNum);
+                    if (log.isDebugEnabled()) {
+                        log.info("ConfigCenter config changed, delta={}, effectNum={}", deltaConfigs.size(), effectNum);
+                    }
                 }
                 lastPullDate = calcNewLastPullDate(startDate);
-                log.info("ConfigCenter auto pull finished, lastPullDate={}", lastPullDate);
+                if (log.isDebugEnabled()) {
+                    log.info("ConfigCenter auto pull finished, lastPullDate={}", lastPullDate);
+                }
             } catch (Throwable t) {
                 log.error("ConfigCenter auto pull config and trigger listener exception", t);
             }
         };
         // 立即运行一次
         runnable.run();
-        // 后台定时拉取
+        // 后台定时拉取，因为注册中心的心跳超时时间定为3秒有效，这里采用1秒拉取一次的方式，避免拉取不到最新的数据。
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-        scheduledExecutorService.scheduleWithFixedDelay(runnable, 5, 5, TimeUnit.SECONDS);
+        scheduledExecutorService.scheduleWithFixedDelay(runnable, 0, 1, TimeUnit.SECONDS);
     }
 
     private Date calcNewLastPullDate(Date startDate) {

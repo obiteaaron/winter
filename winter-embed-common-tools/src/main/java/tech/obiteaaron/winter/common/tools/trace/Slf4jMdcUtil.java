@@ -55,4 +55,8 @@ public class Slf4jMdcUtil {
             log.error("clearMdcComplete Exception", t);
         }
     }
+
+    public static String getTraceId() {
+        return TraceUtil.getTraceId();
+    }
 }
