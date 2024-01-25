@@ -18,6 +18,7 @@
         <module>winter-embed-strategy-center</module>
         <module>winter-embed-workflow-engine</module>
         <module>winter-embed-web-manager</module>
+        <module>winter-embed-data-sync</module>
     </modules>
 
     <description>The winter of the Internet enterprise is coming, all the major companies are laying off employees,
