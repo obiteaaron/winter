@@ -1,6 +1,7 @@
 package tech.obiteaaron.winter.embed.rpc.spring;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -14,18 +15,24 @@ import tech.obiteaaron.winter.embed.registercenter.RegisterService;
 import tech.obiteaaron.winter.embed.rpc.WinterRpcBootstrap;
 import tech.obiteaaron.winter.embed.rpc.executing.ConsumerDispatcher;
 import tech.obiteaaron.winter.embed.rpc.executing.ProviderDispatcher;
+import tech.obiteaaron.winter.embed.rpc.executing.impl.ConsumerDispatcherImpl;
+import tech.obiteaaron.winter.embed.rpc.executing.impl.ProviderDispatcherImpl;
 import tech.obiteaaron.winter.embed.rpc.filter.LoggingRpcFilter;
 import tech.obiteaaron.winter.embed.rpc.filter.MonitorRpcFilter;
 import tech.obiteaaron.winter.embed.rpc.filter.RpcFilter;
 import tech.obiteaaron.winter.embed.rpc.filter.TracingRpcFilter;
 import tech.obiteaaron.winter.embed.rpc.regesiter.RegisterManager;
+import tech.obiteaaron.winter.embed.rpc.regesiter.impl.RegisterManagerImpl;
+import tech.obiteaaron.winter.embed.rpc.router.ProviderRouter;
 import tech.obiteaaron.winter.embed.rpc.router.RoundRobinProviderRouterImpl;
 import tech.obiteaaron.winter.embed.rpc.scheduler.ProviderWatchDog;
-import tech.obiteaaron.winter.embed.rpc.server.VertxHttpServer;
+import tech.obiteaaron.winter.embed.rpc.server.HttpServer;
+import tech.obiteaaron.winter.embed.rpc.server.impl.VertxHttpServerImpl;
 
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 
 @EnableConfigurationProperties(WinterRpcProperties.class)
 @Configuration
@@ -55,27 +62,36 @@ public class WinterRpcSpringAutoConfiguration implements SmartApplicationListene
         if (atomicBoolean.compareAndSet(false, true)) {
             // 延迟赋值
             WinterRpcProperties winterRpcProperties = applicationContext.getBean(WinterRpcProperties.class);
-            RegisterService registerService = applicationContext.getBean(RegisterService.class);
 
-            // TODO 这里的所有Bean，都可以从Spring里面获取，如果有，则覆盖new的，这依赖于接口，得先修改为面向接口
-            RegisterManager registerManager = new RegisterManager();
+            // 这里的Bean，可以从Spring里面获取，如果有，则直接使用，否则new一个
+            RegisterService registerService = applicationContext.getBean(RegisterService.class);
+            // 扩展支持自定义RegisterManager
+            RegisterManager registerManager = getBeanPrimary(RegisterManager.class, RegisterManagerImpl::new);
             registerManager.setRegisterService(registerService);
-            ProviderDispatcher providerDispatcher = new ProviderDispatcher();
-            ConsumerDispatcher consumerDispatcher = new ConsumerDispatcher();
-            consumerDispatcher.setCommonOkHttpClient(OkHttpClientFactory.commonOkHttpClient());
-            VertxHttpServer vertxHttpServer = new VertxHttpServer();
+            // 扩展支持自定义ConsumerDispatcher
+            HttpServer httpServer = getBeanPrimary(HttpServer.class, VertxHttpServerImpl::new);
+            // 扩展支持自定义ConsumerDispatcher
+            ConsumerDispatcher consumerDispatcher = getBeanPrimary(ConsumerDispatcher.class, () -> {
+                ConsumerDispatcherImpl bean = new ConsumerDispatcherImpl();
+                bean.setCommonOkHttpClient(OkHttpClientFactory.commonOkHttpClient());
+                return bean;
+            });
+            // 扩展支持自定义ProviderDispatcher
+            ProviderDispatcher providerDispatcher = getBeanPrimary(ProviderDispatcherImpl.class, ProviderDispatcherImpl::new);
+            // 扩展支持自定义ProviderRouter
+            ProviderRouter providerRouter = getBeanPrimary(ProviderRouter.class, RoundRobinProviderRouterImpl::new);
 
             // 扩展支持自定义RpcFilter
-            Map<String, RpcFilter> beansOfType = applicationContext.getBeansOfType(RpcFilter.class);
+            Map<String, RpcFilter> rpcFilterMap = applicationContext.getBeansOfType(RpcFilter.class);
 
-            winterRpcBootstrap.vertxHttpServer(vertxHttpServer)
+            winterRpcBootstrap.vertxHttpServer(httpServer)
                     .registerManager(registerManager)
                     .providerDispatcher(providerDispatcher)
                     .consumerDispatcher(consumerDispatcher)
                     .providerWatchDog(new ProviderWatchDog())
                     .defaultSerializerType("json")
-                    .providerRouter(new RoundRobinProviderRouterImpl())
-                    .rpcFilters(new ArrayList<>(beansOfType.values()))
+                    .providerRouter(providerRouter)
+                    .rpcFilters(new ArrayList<>(rpcFilterMap.values()))
                     .rpcFilter(new LoggingRpcFilter())
                     .rpcFilter(new TracingRpcFilter())
                     .rpcFilter(new MonitorRpcFilter())
@@ -85,6 +101,14 @@ public class WinterRpcSpringAutoConfiguration implements SmartApplicationListene
                     .loadBalanceServer(winterRpcProperties.getLoadBalanceServer());
             // 启动
             winterRpcBootstrap.start();
+        }
+    }
+
+    private <T> T getBeanPrimary(Class<T> clazz, Supplier<T> supplier) {
+        try {
+            return applicationContext.getBean(clazz);
+        } catch (NoSuchBeanDefinitionException ignore) {
+            return supplier.get();
         }
     }
 

@@ -11,7 +11,7 @@ import tech.obiteaaron.winter.embed.rpc.regesiter.ProviderConfig;
 import tech.obiteaaron.winter.embed.rpc.regesiter.RegisterManager;
 import tech.obiteaaron.winter.embed.rpc.router.ProviderRouter;
 import tech.obiteaaron.winter.embed.rpc.scheduler.ProviderWatchDog;
-import tech.obiteaaron.winter.embed.rpc.server.VertxHttpServer;
+import tech.obiteaaron.winter.embed.rpc.server.HttpServer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,7 +57,7 @@ public class WinterRpcBootstrap {
      */
     private String consumerSerializerSupports = "hessian,json";
 
-    private VertxHttpServer vertxHttpServer;
+    private HttpServer httpServer;
 
     private RegisterManager registerManager;
 
@@ -88,7 +88,7 @@ public class WinterRpcBootstrap {
     }
 
     public void start() {
-        Objects.requireNonNull(vertxHttpServer);
+        Objects.requireNonNull(httpServer);
         Objects.requireNonNull(registerManager);
         Objects.requireNonNull(providerDispatcher);
         Objects.requireNonNull(consumerDispatcher);
@@ -102,7 +102,7 @@ public class WinterRpcBootstrap {
         });
 
         // 先启动监听服务
-        vertxHttpServer.startHttpServer(port);
+        httpServer.startHttpServer(port);
 
         // 真正注册
         // 启动服务注册者的心跳WatchDog
@@ -149,9 +149,9 @@ public class WinterRpcBootstrap {
         this.consumerSerializerSupports = consumerSerializerSupports;
     }
 
-    public void setVertxHttpServer(VertxHttpServer vertxHttpServer) {
-        this.vertxHttpServer = vertxHttpServer;
-        this.vertxHttpServer.setWinterRpcBootstrap(this);
+    public void setHttpServer(HttpServer httpServer) {
+        this.httpServer = httpServer;
+        this.httpServer.setWinterRpcBootstrap(this);
     }
 
     public void setRegisterManager(RegisterManager registerManager) {
@@ -207,8 +207,8 @@ public class WinterRpcBootstrap {
         return this;
     }
 
-    public WinterRpcBootstrap vertxHttpServer(VertxHttpServer vertxHttpServer) {
-        this.setVertxHttpServer(vertxHttpServer);
+    public WinterRpcBootstrap vertxHttpServer(HttpServer httpServer) {
+        this.setHttpServer(httpServer);
         return this;
     }
 

@@ -1,4 +1,4 @@
-package tech.obiteaaron.winter.embed.rpc.server;
+package tech.obiteaaron.winter.embed.rpc.server.impl;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -8,11 +8,12 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import tech.obiteaaron.winter.common.tools.trace.Slf4jMdcUtil;
 import tech.obiteaaron.winter.embed.rpc.WinterRpcBootstrap;
+import tech.obiteaaron.winter.embed.rpc.server.HttpServer;
 
 import java.nio.charset.StandardCharsets;
 
 @Slf4j
-public class VertxHttpServer {
+public class VertxHttpServerImpl implements HttpServer {
 
     @Setter
     private WinterRpcBootstrap winterRpcBootstrap;
@@ -23,6 +24,7 @@ public class VertxHttpServer {
      *
      * @param port
      */
+    @Override
     public void startHttpServer(int port) {
         log.info("VertxHttpServer starting");
         VertxOptions vertxOptions = new VertxOptions();
