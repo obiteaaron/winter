@@ -8,6 +8,7 @@ import tech.obiteaaron.winter.embed.registercenter.model.URL;
 import tech.obiteaaron.winter.embed.rpc.WinterRpcBootstrap;
 import tech.obiteaaron.winter.embed.rpc.constant.InvokerStage;
 import tech.obiteaaron.winter.embed.rpc.executing.InvokeContext;
+import tech.obiteaaron.winter.embed.rpc.filter.chain.FilterChain;
 
 import java.util.List;
 
@@ -23,13 +24,13 @@ public class LoggingRpcFilter implements RpcFilter {
     }
 
     @Override
-    public void beforeInvoke(String invokeStage, URL url, InvokeContext context) {
-        log.info("beforeInvoke invokeState={}, url={}, context={}", invokeStage, url, JsonUtil.toJsonString(context));
-    }
-
-    @Override
-    public void afterInvoke(String invokeStage, URL url, InvokeContext context) {
-        log.info("afterInvoke invokeState={}, url={}, context={}", invokeStage, url, JsonUtil.toJsonString(context));
+    public void invoke(String invokeStage, URL url, InvokeContext context, FilterChain filterChain) {
+        try {
+            log.info("beforeInvoke invokeState={}, url={}, context={}", invokeStage, url, JsonUtil.toJsonString(context));
+            filterChain.invoke(invokeStage, url, context);
+        } finally {
+            log.info("afterInvoke invokeState={}, url={}, context={}", invokeStage, url, JsonUtil.toJsonString(context));
+        }
     }
 
     @Override

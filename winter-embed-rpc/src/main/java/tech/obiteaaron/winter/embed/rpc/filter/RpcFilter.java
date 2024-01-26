@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import tech.obiteaaron.winter.embed.registercenter.model.URL;
 import tech.obiteaaron.winter.embed.rpc.WinterRpcBootstrap;
 import tech.obiteaaron.winter.embed.rpc.executing.InvokeContext;
+import tech.obiteaaron.winter.embed.rpc.filter.chain.FilterChain;
 
 import java.util.Comparator;
 import java.util.List;
@@ -19,9 +20,7 @@ public interface RpcFilter extends Comparable<RpcFilter> {
      */
     List<String> supportStageList();
 
-    void beforeInvoke(String invokeStage, URL url, InvokeContext context);
-
-    void afterInvoke(String invokeStage, URL url, InvokeContext context);
+    void invoke(String invokeStage, URL url, InvokeContext context, FilterChain filterChain);
 
     /**
      * 数字越小，优先级越高，consumer和provider阶段都是

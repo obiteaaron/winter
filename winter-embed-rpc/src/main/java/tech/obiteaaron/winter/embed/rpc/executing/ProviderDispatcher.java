@@ -2,20 +2,21 @@ package tech.obiteaaron.winter.embed.rpc.executing;
 
 import io.vertx.core.http.HttpServerRequest;
 import lombok.Setter;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import tech.obiteaaron.winter.embed.registercenter.model.URL;
 import tech.obiteaaron.winter.embed.rpc.WinterRpcBootstrap;
 import tech.obiteaaron.winter.embed.rpc.constant.InvokerStage;
-import tech.obiteaaron.winter.embed.rpc.filter.RpcFilter;
+import tech.obiteaaron.winter.embed.rpc.filter.chain.FilterChainImpl;
 import tech.obiteaaron.winter.embed.rpc.serializer.WinterDeserializer;
 import tech.obiteaaron.winter.embed.rpc.serializer.WinterSerializeFactory;
 import tech.obiteaaron.winter.embed.rpc.serializer.WinterSerializer;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Objects;
 
 public class ProviderDispatcher {
 
@@ -35,14 +36,20 @@ public class ProviderDispatcher {
             // 序列化方式
             String serializerType = StringUtils.firstNonBlank(httpServerRequest.getParam("serializerType"), winterRpcBootstrap.getDefaultSerializerType());
             InvokeContext invokeContext = deserialize(url, body, serializerType);
-            // 执行前Filter
-            doProviderBeforeFilter(url, invokeContext);
-            // 执行调用本地实现方法
-            Object result = doExecute(invokeContext);
-            // 执行后Filter
-            doProviderAfterFilter(url, invokeContext);
+
+            // 构造调用链
+            FilterChainImpl filterChain = new FilterChainImpl();
+            filterChain.setRpcFilters(winterRpcBootstrap.getRpcFilters());
+            filterChain.setRealInvokeFilter(new FilterChainImpl.RealInvokeFilter(() -> {
+                // 调用远程服务
+                Object result = doExecute(invokeContext);
+                invokeContext.setResult(result);
+            }));
+
+            filterChain.invoke(InvokerStage.PROVIDER.name(), url, invokeContext);
+
             // 序列化
-            return serialize(result, serializerType);
+            return serialize(invokeContext.getResult(), serializerType);
         } catch (Exception e) {
             throw e instanceof RuntimeException ? (RuntimeException) e : new RuntimeException(e);
         }
@@ -80,16 +87,6 @@ public class ProviderDispatcher {
         return invokeContext;
     }
 
-    private void doProviderBeforeFilter(URL consumerUrl, InvokeContext invokeContext) {
-        List<RpcFilter> rpcFilters = new ArrayList<>(winterRpcBootstrap.getRpcFilters());
-        if (CollectionUtils.isNotEmpty(rpcFilters)) {
-            rpcFilters.stream()
-                    .filter(item -> item.supportStageList() != null && item.supportStageList().contains(InvokerStage.PROVIDER.name()))
-                    .sorted()
-                    .forEach(item -> item.beforeInvoke(InvokerStage.PROVIDER.name(), consumerUrl, invokeContext));
-        }
-    }
-
     private Object doExecute(InvokeContext invokeContext) {
         try {
             String serviceName = Objects.requireNonNull(StringUtils.trimToNull(invokeContext.getServiceName()), "serviceName cannot be null");
@@ -105,16 +102,6 @@ public class ProviderDispatcher {
             return result;
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    private void doProviderAfterFilter(URL consumerUrl, InvokeContext invokeContext) {
-        List<RpcFilter> rpcFilters = new ArrayList<>(winterRpcBootstrap.getRpcFilters());
-        if (CollectionUtils.isNotEmpty(rpcFilters)) {
-            rpcFilters.stream()
-                    .filter(item -> item.supportStageList() != null && item.supportStageList().contains(InvokerStage.PROVIDER.name()))
-                    .sorted(Comparator.comparingInt(RpcFilter::order).reversed())
-                    .forEach(item -> item.afterInvoke(InvokerStage.PROVIDER.name(), consumerUrl, invokeContext));
         }
     }
 

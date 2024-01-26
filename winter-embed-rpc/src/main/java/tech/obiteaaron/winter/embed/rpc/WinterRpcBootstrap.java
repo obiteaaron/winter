@@ -180,6 +180,8 @@ public class WinterRpcBootstrap {
             for (RpcFilter rpcFilter : this.rpcFilters) {
                 rpcFilter.setWinterRpcBootstrap(this);
             }
+            // 优先级排序
+            this.rpcFilters.sort(RpcFilter::compareTo);
         }
     }
 
@@ -232,10 +234,8 @@ public class WinterRpcBootstrap {
     }
 
     public WinterRpcBootstrap rpcFilter(RpcFilter rpcFilter) {
-        if (this.rpcFilters == null) {
-            this.rpcFilters = new ArrayList<>();
-        }
         this.rpcFilters.add(rpcFilter);
+        this.setRpcFilters(rpcFilters);
         return this;
     }
 
@@ -245,10 +245,8 @@ public class WinterRpcBootstrap {
     }
 
     public WinterRpcBootstrap providerRouter(ProviderRouter providerRouter) {
-        if (this.providerRouters == null) {
-            this.providerRouters = new ArrayList<>();
-        }
         this.providerRouters.add(providerRouter);
+        this.setProviderRouters(providerRouters);
         return this;
     }
 
@@ -293,9 +291,6 @@ public class WinterRpcBootstrap {
     }
 
     public WinterRpcBootstrap consumerConfig(ConsumerConfig consumerConfig) {
-        if (this.consumerConfigs == null) {
-            this.consumerConfigs = new ArrayList<>();
-        }
         this.consumerConfigs.add(Objects.requireNonNull(consumerConfig));
         return this;
     }
@@ -306,9 +301,6 @@ public class WinterRpcBootstrap {
     }
 
     public WinterRpcBootstrap providerConfig(ProviderConfig providerConfig) {
-        if (this.providerConfigs == null) {
-            this.providerConfigs = new ArrayList<>();
-        }
         this.providerConfigs.add(Objects.requireNonNull(providerConfig));
         return this;
     }

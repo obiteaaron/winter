@@ -12,7 +12,7 @@ import tech.obiteaaron.winter.embed.rpc.WinterConsumer;
 import tech.obiteaaron.winter.embed.rpc.WinterRpcBootstrap;
 import tech.obiteaaron.winter.embed.rpc.constant.InvokerStage;
 import tech.obiteaaron.winter.embed.rpc.constant.MethodUtil;
-import tech.obiteaaron.winter.embed.rpc.filter.RpcFilter;
+import tech.obiteaaron.winter.embed.rpc.filter.chain.FilterChainImpl;
 import tech.obiteaaron.winter.embed.rpc.regesiter.ConsumerConfig;
 import tech.obiteaaron.winter.embed.rpc.router.ProviderRouter;
 import tech.obiteaaron.winter.embed.rpc.serializer.WinterDeserializer;
@@ -20,8 +20,6 @@ import tech.obiteaaron.winter.embed.rpc.serializer.WinterSerializeFactory;
 import tech.obiteaaron.winter.embed.rpc.serializer.WinterSerializer;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 public class ConsumerDispatcher {
@@ -60,17 +58,19 @@ public class ConsumerDispatcher {
         invokeContext.setSerializerType(serializerType);
         String serializedContext = winterSerializer.serializer(invokeContext);
 
-        // 调用前Filter
-        doConsumerBeforeFilter(providerUrl, invokeContext);
+        // 构造调用链
+        FilterChainImpl filterChain = new FilterChainImpl();
+        filterChain.setRpcFilters(winterRpcBootstrap.getRpcFilters());
+        filterChain.setRealInvokeFilter(new FilterChainImpl.RealInvokeFilter(() -> {
+            // 调用远程服务
+            String result = doInvoke(invokeContext, providerUrl, serializedContext);
+            invokeContext.setResult(result);
+        }));
 
-        // 调用远程服务
-        String result = doInvoke(invokeContext, providerUrl, serializedContext);
-        invokeContext.setResult(result);
-        // 调用后Filter
-        doConsumerAfterFilter(providerUrl, invokeContext);
+        filterChain.invoke(InvokerStage.CONSUMER.name(), providerUrl, invokeContext);
 
         // 反序列化
-        return deserializer(method, serializerType, result);
+        return deserializer(method, serializerType, (String) invokeContext.getResult());
     }
 
     /**
@@ -93,16 +93,6 @@ public class ConsumerDispatcher {
         return providerListResolve.get(0);
     }
 
-    private void doConsumerBeforeFilter(URL providerUrl, InvokeContext invokeContext) {
-        List<RpcFilter> rpcFilters = new ArrayList<>(winterRpcBootstrap.getRpcFilters());
-        if (CollectionUtils.isNotEmpty(rpcFilters)) {
-            rpcFilters.stream()
-                    .filter(item -> item.supportStageList() != null && item.supportStageList().contains(InvokerStage.CONSUMER.name()))
-                    .sorted()
-                    .forEach(item -> item.beforeInvoke(InvokerStage.CONSUMER.name(), providerUrl, invokeContext));
-        }
-    }
-
     String doInvoke(InvokeContext invokeContext, URL providerUrl, String serializedContext) {
         // 用服务提供者的IP或者负载均衡服务器的IP
         String ip = StringUtils.firstNonBlank(providerUrl.getParameterMap().get("loadBalanceServer"), providerUrl.getIp());
@@ -122,16 +112,6 @@ public class ConsumerDispatcher {
         // TODO 支持调用后短轮询获取结果，以突破网关、接口的timeout限制
         String result = commonOkHttpClient.doPost(invokeUrl, serializedContext);
         return result;
-    }
-
-    private void doConsumerAfterFilter(URL providerUrl, InvokeContext invokeContext) {
-        List<RpcFilter> rpcFilters = new ArrayList<>(winterRpcBootstrap.getRpcFilters());
-        if (CollectionUtils.isNotEmpty(rpcFilters)) {
-            rpcFilters.stream()
-                    .filter(item -> item.supportStageList() != null && item.supportStageList().contains(InvokerStage.CONSUMER.name()))
-                    .sorted(Comparator.comparingInt(RpcFilter::order).reversed())
-                    .forEach(item -> item.afterInvoke(InvokerStage.CONSUMER.name(), providerUrl, invokeContext));
-        }
     }
 
     private Object deserializer(Method method, String serializerType, String result) {
