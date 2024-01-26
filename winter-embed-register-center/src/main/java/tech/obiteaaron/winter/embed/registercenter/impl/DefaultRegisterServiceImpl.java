@@ -1,6 +1,7 @@
 package tech.obiteaaron.winter.embed.registercenter.impl;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 import tech.obiteaaron.winter.common.tools.json.JsonUtil;
 import tech.obiteaaron.winter.configcenter.Config;
@@ -25,7 +26,7 @@ public class DefaultRegisterServiceImpl implements RegisterService {
 
     @Override
     public void register(URL url) {
-        String name = parseName(url);
+        String name = parseNameRegister(url);
         String group = parseGroup(url);
         String content = parseContent(url);
 
@@ -50,7 +51,11 @@ public class DefaultRegisterServiceImpl implements RegisterService {
         Assert.isTrue(create == 1, "register service failed");
     }
 
-    private String parseName(URL url) {
+    private String parseNameRegister(URL url) {
+        return url.getPath() + ":" + url.getParameterMap().get("version") + ":" + url.getIp();
+    }
+
+    private String parseNameQuery(URL url) {
         return url.getPath() + ":" + url.getParameterMap().get("version");
     }
 
@@ -81,7 +86,7 @@ public class DefaultRegisterServiceImpl implements RegisterService {
 
     @Override
     public List<URL> lookup(URL url) {
-        String name = parseName(url);
+        String name = parseNameQuery(url);
         String group = parseGroup(url);
 
         // 心跳3秒内的算有效
@@ -89,7 +94,8 @@ public class DefaultRegisterServiceImpl implements RegisterService {
         // 直接从本地查，本地拥有全量数据
         List<Config> allConfigs = ConfigCenter.getAllConfigs();
         List<URL> collect = allConfigs.stream()
-                .filter(item -> Objects.equals(item.getName(), name) && Objects.equals(item.getGroup(), group))
+                .filter(item -> Objects.equals(item.getGroup(), group))
+                .filter(item -> StringUtils.startsWith(item.getName(), name))
                 .filter(item -> item.getGmtModified() != null && item.getGmtModified().getTime() > validProviderTime)
                 .map(item -> JsonUtil.parseObject(item.getContent(), URL.class))
                 .collect(Collectors.toList());
