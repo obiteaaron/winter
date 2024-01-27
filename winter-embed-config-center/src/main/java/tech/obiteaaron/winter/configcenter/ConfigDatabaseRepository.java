@@ -29,7 +29,7 @@ final class ConfigDatabaseRepository {
         Objects.requireNonNull(config);
         String group = StringUtils.trimToEmpty(config.getGroupName());
         String name = StringUtils.trimToEmpty(config.getName());
-        String sql = "select `id`, `name`, `group_name`, `content`, `gmt_create` as gmtCreate, `gmt_modified` as gmtModified, `description` from winter_embed_config_center where `name` like ? and `group_name` = ? order by gmt_modified desc";
+        String sql = "select `id`, `name`, `group_name` as groupName, `content`, `gmt_create` as gmtCreate, `gmt_modified` as gmtModified, `description` from winter_embed_config_center where `name` like ? and `group_name` = ? order by gmt_modified desc";
         return jdbcTemplate().query(sql, new Object[]{'%' + name + '%', group}, new int[]{Types.VARCHAR, Types.VARCHAR}, new BeanPropertyRowMapper<>(Config.class));
     }
 
@@ -62,12 +62,12 @@ final class ConfigDatabaseRepository {
     }
 
     public List<Config> queryAll() {
-        String sql = "select `id`, `name`, `group_name`, `content`, `gmt_create` as gmtCreate, `gmt_modified` as gmtModified from winter_embed_config_center order by gmt_modified asc";
+        String sql = "select `id`, `name`, `group_name` as groupName, `content`, `gmt_create` as gmtCreate, `gmt_modified` as gmtModified from winter_embed_config_center order by gmt_modified asc";
         return jdbcTemplate().query(sql, new BeanPropertyRowMapper<>(Config.class));
     }
 
     public List<Config> queryDelta(Date lastPullDate) {
-        String sql = "select `id`, `name`, `group_name`, `content`, `gmt_create` as gmtCreate, `gmt_modified` as gmtModified from winter_embed_config_center where gmt_modified > ? order by gmt_modified asc";
+        String sql = "select `id`, `name`, `group_name` as groupName, `content`, `gmt_create` as gmtCreate, `gmt_modified` as gmtModified from winter_embed_config_center where gmt_modified > ? order by gmt_modified asc";
         return jdbcTemplate().query(sql, new Object[]{lastPullDate}, new int[]{Types.TIMESTAMP}, new BeanPropertyRowMapper<>(Config.class));
     }
 
