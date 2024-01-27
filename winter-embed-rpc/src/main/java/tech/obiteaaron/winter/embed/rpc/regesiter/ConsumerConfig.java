@@ -9,6 +9,8 @@ import lombok.*;
 @Builder
 public class ConsumerConfig {
 
+    String applicationName;
+
     Class<?> interfaceClass;
 
     String interfaceName;

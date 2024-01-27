@@ -26,9 +26,11 @@ public class ProviderWatchDog {
                 }
                 // WatchDog真正注册，并且维持心跳
                 for (ProviderConfig providerConfig : winterRpcBootstrap.getProviderConfigs()) {
+                    providerConfig.setApplicationName(winterRpcBootstrap.getApplicationName());
                     winterRpcBootstrap.getRegisterManager().register(providerConfig);
                 }
                 for (ConsumerConfig consumerConfig : winterRpcBootstrap.getConsumerConfigs()) {
+                    consumerConfig.setApplicationName(winterRpcBootstrap.getApplicationName());
                     winterRpcBootstrap.getRegisterManager().subscribe(consumerConfig);
                 }
             } catch (Throwable t) {

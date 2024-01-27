@@ -26,13 +26,13 @@ public final class Config {
      */
     private Date gmtModified;
     /**
-     * 配置分组（64个字符）
-     */
-    private String group;
-    /**
      * 配置名称（64个字符）
      */
     private String name;
+    /**
+     * 配置分组（64个字符）
+     */
+    private String groupName;
     /**
      * 配置内容，mediumtext长度
      */
@@ -43,7 +43,7 @@ public final class Config {
     private String description;
 
     public String uniqueKey() {
-        return uniqueKey(getGroup(), getName());
+        return uniqueKey(getGroupName(), getName());
     }
 
     public static String uniqueKey(String group, String name) {

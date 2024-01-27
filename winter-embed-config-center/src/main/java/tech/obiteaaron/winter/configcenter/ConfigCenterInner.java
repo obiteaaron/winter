@@ -122,7 +122,7 @@ final class ConfigCenterInner {
                             fieldValue = field.get(bean);
                             Config config = new Config();
                             config.setName(name);
-                            config.setGroup(group);
+                            config.setGroupName(group);
                             config.setDescription(description);
                             String value = ConfigValueUtil.stringify(fieldValue, field.getType(), field.getGenericType());
                             config.setContent(StringUtils.firstNonBlank(value, ConfigCenter.UNDEFINED_VALUE));
@@ -194,7 +194,7 @@ final class ConfigCenterInner {
                         Integer apply = function.apply(item);
                         return apply == null ? 0 : apply;
                     } catch (Throwable t) {
-                        log.error("ConfigCenter listener invoke exception, group={}, name={}", item.getGroup(), item.getName(), t);
+                        log.error("ConfigCenter listener invoke exception, group={}, name={}", item.getGroupName(), item.getName(), t);
                     }
                 }
             }

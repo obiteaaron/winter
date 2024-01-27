@@ -40,7 +40,7 @@ public class TestConfigManager {
     private static Config of(String name, String group, String content, String description) {
         Config config = new Config();
         config.setName(name);
-        config.setGroup(group);
+        config.setGroupName(group);
         config.setContent(content);
         config.setDescription(description);
         return config;

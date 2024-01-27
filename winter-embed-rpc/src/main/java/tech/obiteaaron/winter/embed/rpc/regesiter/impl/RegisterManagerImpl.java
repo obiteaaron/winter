@@ -39,6 +39,7 @@ public class RegisterManagerImpl implements RegisterManager {
     public void register(ProviderConfig providerConfig) {
         // 注册到注册中心
         Map<String, String> parameterMap = ImmutableMap.of(
+                "applicationName", providerConfig.getApplicationName(),
                 "version", providerConfig.getVersion(),
                 "group", providerConfig.getGroup(),
                 "type", "provider",
@@ -91,6 +92,7 @@ public class RegisterManagerImpl implements RegisterManager {
                 .port(winterRpcBootstrap.getPort())
                 .path(consumerConfig.getInterfaceName())
                 .parameterMap(ImmutableMap.of(
+                        "applicationName", consumerConfig.getApplicationName(),
                         "version", consumerConfig.getVersion(),
                         "group", consumerConfig.getGroup(),
                         "type", "consumer"))

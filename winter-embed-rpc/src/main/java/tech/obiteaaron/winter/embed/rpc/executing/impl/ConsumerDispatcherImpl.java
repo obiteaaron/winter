@@ -52,7 +52,7 @@ public class ConsumerDispatcherImpl implements ConsumerDispatcher {
         invokeContext.setMethodSignature(MethodUtil.generateMethodSignature(method));
         invokeContext.setArguments(args);
         invokeContext.setTraceId(Slf4jMdcUtil.getTraceId());
-        invokeContext.setApplicationName(winterRpcBootstrap.getName());
+        invokeContext.setApplicationName(winterRpcBootstrap.getApplicationName());
 
         // 序列化参数
         String serializerSupports = providerUrl.getParameterMap().get("serializerSupports");

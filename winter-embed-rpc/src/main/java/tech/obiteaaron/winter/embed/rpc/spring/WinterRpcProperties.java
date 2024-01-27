@@ -9,6 +9,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Setter
 public class WinterRpcProperties {
 
+    private String applicationName = "default";
+
     private int port = 7080;
 
     private boolean httpsEnable = false;

@@ -28,6 +28,8 @@ public class WinterRpcBootstrap {
     public static final ConcurrentHashMap<String, WinterRpcBootstrap> INSTANCE_MAP = new ConcurrentHashMap<>();
 
     private String name;
+
+    private String applicationName;
     /**
      * http和https可选，默认http，如果认为http不安全，可以开启https开关
      */
@@ -121,6 +123,11 @@ public class WinterRpcBootstrap {
         this.name = Objects.requireNonNull(StringUtils.trimToNull(name));
     }
 
+
+    public void setApplicationName(String applicationName) {
+        this.applicationName = Objects.requireNonNull(StringUtils.trimToNull(applicationName));
+    }
+
     public void setHttpsEnable(boolean httpsEnable) {
         this.httpsEnable = httpsEnable;
     }
@@ -203,7 +210,12 @@ public class WinterRpcBootstrap {
     }
 
     public WinterRpcBootstrap name(String name) {
-        this.name = name;
+        this.setName(name);
+        return this;
+    }
+
+    public WinterRpcBootstrap applicationName(String applicationName) {
+        this.setApplicationName(applicationName);
         return this;
     }
 

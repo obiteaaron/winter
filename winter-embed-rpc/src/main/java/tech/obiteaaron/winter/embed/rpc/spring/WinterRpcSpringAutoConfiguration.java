@@ -98,6 +98,7 @@ public class WinterRpcSpringAutoConfiguration implements SmartApplicationListene
                     .ipPrefix(winterRpcProperties.getIpPrefix())
                     .port(winterRpcProperties.getPort())
                     .httpsEnable(winterRpcProperties.isHttpsEnable())
+                    .applicationName(winterRpcProperties.getApplicationName())
                     .loadBalanceServer(winterRpcProperties.getLoadBalanceServer());
             // 启动
             winterRpcBootstrap.start();

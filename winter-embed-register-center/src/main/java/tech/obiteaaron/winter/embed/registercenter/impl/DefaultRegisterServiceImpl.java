@@ -32,7 +32,7 @@ public class DefaultRegisterServiceImpl implements RegisterService {
 
         Config configQuery = new Config();
         configQuery.setName(name);
-        configQuery.setGroup(group);
+        configQuery.setGroupName(group);
         List<Config> queryResult = configManager.query(configQuery);
         if (!queryResult.isEmpty() && queryResult.get(0) != null) {
             Config configOld = queryResult.get(0);
@@ -94,7 +94,7 @@ public class DefaultRegisterServiceImpl implements RegisterService {
         // 直接从本地查，本地拥有全量数据
         List<Config> allConfigs = ConfigCenter.getAllConfigs();
         List<URL> collect = allConfigs.stream()
-                .filter(item -> Objects.equals(item.getGroup(), group))
+                .filter(item -> Objects.equals(item.getGroupName(), group))
                 .filter(item -> StringUtils.startsWith(item.getName(), name))
                 .filter(item -> item.getGmtModified() != null && item.getGmtModified().getTime() > validProviderTime)
                 .map(item -> JsonUtil.parseObject(item.getContent(), URL.class))

@@ -9,6 +9,8 @@ import lombok.*;
 @Builder
 public class ProviderConfig {
 
+    String applicationName;
+
     Class<?> interfaceClass;
 
     String interfaceName;
