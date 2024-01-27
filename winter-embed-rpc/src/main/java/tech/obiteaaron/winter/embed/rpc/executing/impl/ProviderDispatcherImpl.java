@@ -37,7 +37,7 @@ public class ProviderDispatcherImpl implements ProviderDispatcher {
                     .parameterMap(URL.getParameterMap(httpServerRequest.query()))
                     .build();
             // 序列化方式
-            String serializerType = StringUtils.firstNonBlank(httpServerRequest.getParam("serializerType"), winterRpcBootstrap.getDefaultSerializerType());
+            String serializerType = StringUtils.firstNonBlank(httpServerRequest.getParam("serializerType"), winterRpcBootstrap.getSerializerType());
             InvokeContext invokeContext = deserialize(url, body, serializerType);
 
             // 构造调用链

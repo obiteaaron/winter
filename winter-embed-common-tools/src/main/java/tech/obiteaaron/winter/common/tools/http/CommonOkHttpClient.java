@@ -13,12 +13,14 @@ import java.util.Map;
 
 @Slf4j
 public final class CommonOkHttpClient {
-    private final OkHttpClient okHttpClient = OkHttpClientFactory.createDefault();
+
+    private final OkHttpClient okHttpClient;
+
+    public CommonOkHttpClient(OkHttpClient okHttpClient) {
+        this.okHttpClient = okHttpClient;
+    }
 
     private final MediaType CONTENT_TYPE_JSON = MediaType.parse("application/json; charset=utf-8");
-
-    CommonOkHttpClient() {
-    }
 
     public String doGet(String url) {
         return doGet(url, null, null);

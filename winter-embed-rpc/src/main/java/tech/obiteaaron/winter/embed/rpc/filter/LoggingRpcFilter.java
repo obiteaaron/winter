@@ -26,10 +26,14 @@ public class LoggingRpcFilter implements RpcFilter {
     @Override
     public void invoke(String invokeStage, URL url, InvokeContext context, FilterChain filterChain) {
         try {
-            log.info("beforeInvoke invokeState={}, url={}, context={}", invokeStage, url, JsonUtil.toJsonString(context));
+            if (winterRpcBootstrap.isLogging()) {
+                log.info("beforeInvoke invokeState={}, url={}, context={}", invokeStage, url, JsonUtil.toJsonString(context));
+            }
             filterChain.invoke(invokeStage, url, context);
         } finally {
-            log.info("afterInvoke invokeState={}, url={}, context={}", invokeStage, url, JsonUtil.toJsonString(context));
+            if (winterRpcBootstrap.isLogging()) {
+                log.info("afterInvoke invokeState={}, url={}, context={}", invokeStage, url, JsonUtil.toJsonString(context));
+            }
         }
     }
 

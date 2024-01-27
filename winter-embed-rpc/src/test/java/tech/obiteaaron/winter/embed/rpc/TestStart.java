@@ -28,6 +28,7 @@ public class TestStart {
 
     @Test
     public void invokeServiceByHttp() throws InterruptedException {
+        TimeUnit.SECONDS.sleep(5);
         CommonOkHttpClient commonOkHttpClient = OkHttpClientFactory.commonOkHttpClient();
         String s = commonOkHttpClient.doPost("http://127.0.0.1:8080/tech.obiteaaron.winter.embed.rpc.TestService?serializerType=json&methodSignature=findById(java.lang.String)",
                 "{\"serviceName\":\"tech.obiteaaron.winter.embed.rpc.TestService\",\"methodSignature\":\"findById(java.lang.String)\",\"arguments\":[null]}");

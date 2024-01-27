@@ -45,10 +45,18 @@ public class WinterRpcBootstrap {
 
     private int port;
     /**
+     * 工作线程数量
+     */
+    private int workThreadPoolSize = 50;
+    /**
+     * 是否打印默认的调用日志
+     */
+    private boolean logging = true;
+    /**
      * 服务提供者默认支持的序列化类型，多个用逗号“,”隔开。
      * JSON可能存在兼容性问题，主要是为了简单测试使用，生产环境建议都是用hessian。
      */
-    private String defaultSerializerType = "hessian";
+    private String serializerType = "hessian";
     /**
      * 服务提供者默认支持的序列化类型，多个用逗号“,”隔开
      */
@@ -104,7 +112,7 @@ public class WinterRpcBootstrap {
         });
 
         // 先启动监听服务
-        httpServer.startHttpServer(port);
+        httpServer.startHttpServer(port, workThreadPoolSize);
 
         // 真正注册
         // 启动服务注册者的心跳WatchDog
@@ -144,8 +152,12 @@ public class WinterRpcBootstrap {
         this.port = port;
     }
 
-    public void setDefaultSerializerType(String defaultSerializerType) {
-        this.defaultSerializerType = defaultSerializerType;
+    public void setWorkThreadPoolSize(int workThreadPoolSize) {
+        this.workThreadPoolSize = workThreadPoolSize;
+    }
+
+    public void setSerializerType(String serializerType) {
+        this.serializerType = serializerType;
     }
 
     public void setProviderSerializerSupports(String providerSerializerSupports) {
@@ -287,8 +299,13 @@ public class WinterRpcBootstrap {
         return this;
     }
 
-    public WinterRpcBootstrap defaultSerializerType(String defaultSerializerType) {
-        this.setDefaultSerializerType(defaultSerializerType);
+    public WinterRpcBootstrap workThreadPoolSize(int workThreadPoolSize) {
+        this.workThreadPoolSize = workThreadPoolSize;
+        return this;
+    }
+
+    public WinterRpcBootstrap serializerType(String serializerType) {
+        this.setSerializerType(serializerType);
         return this;
     }
 

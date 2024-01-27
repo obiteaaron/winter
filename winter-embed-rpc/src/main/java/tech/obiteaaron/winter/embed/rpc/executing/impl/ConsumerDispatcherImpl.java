@@ -56,7 +56,7 @@ public class ConsumerDispatcherImpl implements ConsumerDispatcher {
 
         // 序列化参数
         String serializerSupports = providerUrl.getParameterMap().get("serializerSupports");
-        String serializerType = WinterSerializeFactory.resolveSerializerType(serializerSupports, winterRpcBootstrap.getConsumerSerializerSupports(), winterRpcBootstrap.getDefaultSerializerType());
+        String serializerType = WinterSerializeFactory.resolveSerializerType(serializerSupports, winterRpcBootstrap.getConsumerSerializerSupports(), winterRpcBootstrap.getSerializerType());
         WinterSerializer winterSerializer = WinterSerializeFactory.getWinterSerializer(serializerType);
         invokeContext.setSerializerType(serializerType);
         String serializedContext = winterSerializer.serializer(invokeContext);

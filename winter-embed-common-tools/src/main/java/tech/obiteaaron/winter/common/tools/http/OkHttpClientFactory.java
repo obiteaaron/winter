@@ -26,12 +26,12 @@ public class OkHttpClientFactory {
     public static final int MIN_PER_HOST_CONN = 1;
 
     public static CommonOkHttpClient commonOkHttpClient() {
-        return new CommonOkHttpClient();
+        return new CommonOkHttpClient(createDefault());
     }
 
     public static OkHttpClient createDefault() {
         return create(0,
-                10,
+                10_000,
                 5,
                 10,
                 false,
@@ -41,7 +41,7 @@ public class OkHttpClientFactory {
 
     public static OkHttpClient createEnhanceDefault() {
         return create(0,
-                10,
+                10_000,
                 5,
                 10,
                 false,
@@ -50,25 +50,26 @@ public class OkHttpClientFactory {
     }
 
     /**
-     * @param connectionFromPoolTimeoutSeconds 从连接池获取链接的超市时间，默认不超时
-     * @param timeOutSeconds                   连接、读、写超时时间
-     * @param maxConnTotal                     最大连接数量，默认10
-     * @param maxConnPerHost                   每个host最大连接数量，默认5
-     * @param allAllSsl                        是否允许所有 SSL，默认false，不建议使用true
-     * @param syncToAsync                      是否使用同步转异步。因为OkHttp对于同步调用是当前线程直接调用，不走连接池（这一点和HttpClient的设计不同），只有异步会走连接池，
-     *                                         因此maxConnTotal和maxConnPerHost只在异步下才生效，如果业务代码同步调用，可以用这个开关实现同步转异步以使并发数生效。
-     * @param defaultHeaders                   默认的Header，比如JSON
+     * @param connectionFromPoolTimeoutMilliseconds 从连接池获取链接的超市时间，默认不超时，传入0即可
+     * @param timeOutMilliseconds                   连接、读、写超时时间，毫秒
+     * @param maxConnTotal                          最大连接数量，默认10
+     * @param maxConnPerHost                        每个host最大连接数量，默认5
+     * @param allAllSsl                             是否允许所有 SSL，默认false，不建议使用true
+     * @param syncToAsync                           是否使用同步转异步。因为OkHttp对于同步调用是当前线程直接调用，不走连接池（这一点和HttpClient的设计不同），只有异步会走连接池，
+     *                                              因此maxConnTotal和maxConnPerHost只在异步下才生效，如果业务代码同步调用，可以用这个开关实现同步转异步以使并发数生效。
+     *                                              但性能会比直接同步调用和直接异步调用略差一点点。
+     * @param defaultHeaders                        默认的Header，比如JSON
      * @return
      */
-    public static OkHttpClient create(int connectionFromPoolTimeoutSeconds,
-                                      int timeOutSeconds,
+    public static OkHttpClient create(int connectionFromPoolTimeoutMilliseconds,
+                                      int timeOutMilliseconds,
                                       int maxConnTotal,
                                       int maxConnPerHost,
                                       boolean allAllSsl,
                                       boolean syncToAsync,
                                       Map<String, String> defaultHeaders) {
         try {
-            timeOutSeconds = Math.max(timeOutSeconds, MIN_TIMEOUT);
+            timeOutMilliseconds = Math.max(timeOutMilliseconds, MIN_TIMEOUT);
             maxConnTotal = Math.max(maxConnTotal, MIN_CONN_TOTAL);
             maxConnPerHost = Math.max(maxConnPerHost, MIN_PER_HOST_CONN);
 
@@ -107,12 +108,12 @@ public class OkHttpClientFactory {
                 builder.sslSocketFactory(sslSocketFactory, x509TrustManager);
                 builder.setHostnameVerifier$okhttp((message, session) -> true);
             }
-            builder.readTimeout(timeOutSeconds, TimeUnit.SECONDS)
-                    .writeTimeout(timeOutSeconds, TimeUnit.SECONDS)
-                    .connectTimeout(timeOutSeconds, TimeUnit.SECONDS);
-            if (connectionFromPoolTimeoutSeconds > 0) {
+            builder.readTimeout(timeOutMilliseconds, TimeUnit.MILLISECONDS)
+                    .writeTimeout(timeOutMilliseconds, TimeUnit.MILLISECONDS)
+                    .connectTimeout(timeOutMilliseconds, TimeUnit.MILLISECONDS);
+            if (connectionFromPoolTimeoutMilliseconds > 0) {
                 // 异步排队等待时间+connect+读写时间，默认不设置
-                builder.callTimeout(connectionFromPoolTimeoutSeconds + timeOutSeconds * 3L, TimeUnit.SECONDS);
+                builder.callTimeout(connectionFromPoolTimeoutMilliseconds + timeOutMilliseconds * 3L, TimeUnit.MILLISECONDS);
             }
 
             // 这两个参数仅异步生效，同步都是直接由调用线程直接执行的，同步请求无上限

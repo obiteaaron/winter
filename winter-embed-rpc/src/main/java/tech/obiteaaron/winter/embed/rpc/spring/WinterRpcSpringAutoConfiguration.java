@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.SmartApplicationListener;
+import tech.obiteaaron.winter.common.tools.http.CommonOkHttpClient;
 import tech.obiteaaron.winter.common.tools.http.OkHttpClientFactory;
 import tech.obiteaaron.winter.embed.registercenter.RegisterService;
 import tech.obiteaaron.winter.embed.rpc.WinterRpcBootstrap;
@@ -73,7 +74,25 @@ public class WinterRpcSpringAutoConfiguration implements SmartApplicationListene
             // 扩展支持自定义ConsumerDispatcher
             ConsumerDispatcher consumerDispatcher = getBeanPrimary(ConsumerDispatcher.class, () -> {
                 ConsumerDispatcherImpl bean = new ConsumerDispatcherImpl();
-                bean.setCommonOkHttpClient(OkHttpClientFactory.commonOkHttpClient());
+                int consumerThreadPoolSize = winterRpcProperties.getConsumerThreadPoolSize();
+                if (consumerThreadPoolSize > 0) {
+                    CommonOkHttpClient commonOkHttpClient = new CommonOkHttpClient(OkHttpClientFactory.create(0,
+                            winterRpcProperties.getConsumerTimeoutMilliSecond(),
+                            consumerThreadPoolSize,
+                            consumerThreadPoolSize,
+                            false, true, null
+                    ));
+                    bean.setCommonOkHttpClient(commonOkHttpClient);
+                } else {
+                    consumerThreadPoolSize = 1;
+                    CommonOkHttpClient commonOkHttpClient = new CommonOkHttpClient(OkHttpClientFactory.create(0,
+                            winterRpcProperties.getConsumerTimeoutMilliSecond(),
+                            consumerThreadPoolSize,
+                            consumerThreadPoolSize,
+                            false, false, null
+                    ));
+                    bean.setCommonOkHttpClient(commonOkHttpClient);
+                }
                 return bean;
             });
             // 扩展支持自定义ProviderDispatcher
@@ -89,17 +108,18 @@ public class WinterRpcSpringAutoConfiguration implements SmartApplicationListene
                     .providerDispatcher(providerDispatcher)
                     .consumerDispatcher(consumerDispatcher)
                     .providerWatchDog(new ProviderWatchDog())
-                    .defaultSerializerType("json")
                     .providerRouter(providerRouter)
                     .rpcFilters(new ArrayList<>(rpcFilterMap.values()))
                     .rpcFilter(new LoggingRpcFilter())
                     .rpcFilter(new TracingRpcFilter())
                     .rpcFilter(new MonitorRpcFilter())
+                    .serializerType(winterRpcProperties.getSerializerType())
                     .ipPrefix(winterRpcProperties.getIpPrefix())
                     .port(winterRpcProperties.getPort())
                     .httpsEnable(winterRpcProperties.isHttpsEnable())
                     .applicationName(winterRpcProperties.getApplicationName())
-                    .loadBalanceServer(winterRpcProperties.getLoadBalanceServer());
+                    .loadBalanceServer(winterRpcProperties.getLoadBalanceServer())
+                    .workThreadPoolSize(winterRpcProperties.getProviderThreadPoolSize());
             // 启动
             winterRpcBootstrap.start();
         }

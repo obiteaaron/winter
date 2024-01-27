@@ -1,6 +1,7 @@
 package tech.obiteaaron.winter.common.tools.threadpool;
 
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import tech.obiteaaron.winter.common.tools.system.SystemStatus;
 
 import java.util.concurrent.*;
@@ -24,14 +25,70 @@ public class MutableThreadPoolExecutorFactory {
      * @param poolSizeSupplier
      * @return
      */
-    public static MutableThreadPoolExecutor newMutableThreadPoolExecutor(String name, Supplier<Integer> poolSizeSupplier) {
+    public static MutableThreadPoolExecutor newAbortPool(String name, Supplier<Integer> poolSizeSupplier, int queueSize) {
         return CACHE_MAP.compute(name, (k, v) -> {
             if (v == null) {
-                return new MutableThreadPoolExecutor(name, poolSizeSupplier, 8, 8, 10, TimeUnit.MINUTES, new SynchronousQueue<>(), Executors.defaultThreadFactory(), new ThreadPoolExecutor.AbortPolicy());
+                return newPool(name, poolSizeSupplier, queueSize, new AbortPolicy(name));
             } else {
                 return v;
             }
         });
+    }
+
+    public static MutableThreadPoolExecutor newBlockPool(String name, Supplier<Integer> poolSizeSupplier, int queueSize) {
+        return CACHE_MAP.compute(name, (k, v) -> {
+            if (v == null) {
+                return newPool(name, poolSizeSupplier, queueSize, new BlockPolicy(name));
+            } else {
+                return v;
+            }
+        });
+    }
+
+    public static MutableThreadPoolExecutor newCallerRunPool(String name, Supplier<Integer> poolSizeSupplier, int queueSize) {
+        return CACHE_MAP.compute(name, (k, v) -> {
+            if (v == null) {
+                return newPool(name, poolSizeSupplier, queueSize, new CallerRunsPolicy(name));
+            } else {
+                return v;
+            }
+        });
+    }
+
+    public static MutableThreadPoolExecutor newDiscardPool(String name, Supplier<Integer> poolSizeSupplier, int queueSize) {
+        return CACHE_MAP.compute(name, (k, v) -> {
+            if (v == null) {
+                return newPool(name, poolSizeSupplier, queueSize, new DiscardPolicy(name));
+            } else {
+                return v;
+            }
+        });
+    }
+
+    public static MutableThreadPoolExecutor newDiscardOldestPool(String name, Supplier<Integer> poolSizeSupplier, int queueSize) {
+        return CACHE_MAP.compute(name, (k, v) -> {
+            if (v == null) {
+                return newPool(name, poolSizeSupplier, queueSize, new DiscardOldestPolicy(name));
+            } else {
+                return v;
+            }
+        });
+    }
+
+    private static MutableThreadPoolExecutor newPool(String name,
+                                                     Supplier<Integer> poolSizeSupplier,
+                                                     int queueSize,
+                                                     @NotNull RejectedExecutionHandler handler) {
+        Integer maxPoolSize = poolSizeSupplier.get();
+        return new MutableThreadPoolExecutor(name,
+                poolSizeSupplier,
+                queueSize <= 0 ? 0 : maxPoolSize,
+                maxPoolSize,
+                10,
+                TimeUnit.MINUTES,
+                queueSize <= 0 ? new SynchronousQueue<>() : new ArrayBlockingQueue<>(queueSize),
+                Executors.defaultThreadFactory(),
+                handler);
     }
 
     /**
