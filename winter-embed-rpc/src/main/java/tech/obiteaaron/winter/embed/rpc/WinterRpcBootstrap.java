@@ -26,37 +26,14 @@ import java.util.concurrent.ConcurrentHashMap;
 public class WinterRpcBootstrap {
 
     public static final ConcurrentHashMap<String, WinterRpcBootstrap> INSTANCE_MAP = new ConcurrentHashMap<>();
-
+    /**
+     * 多实例唯一名称，非ApplicationName
+     */
     private String name;
-
-    private String applicationName;
     /**
-     * http和https可选，默认http，如果认为http不安全，可以开启https开关
+     * 配置属性
      */
-    private boolean httpsEnable = false;
-    /**
-     * 负载均衡服务，需要用HTTP或者HTTPS协议，用于覆盖服务端的访问地址或域名
-     */
-    private String loadBalanceServer;
-    /**
-     * 多网卡配置IP地址前缀
-     */
-    private String ipPrefix;
-
-    private int port;
-    /**
-     * 工作线程数量
-     */
-    private int workThreadPoolSize = 50;
-    /**
-     * 是否打印默认的调用日志
-     */
-    private boolean logging = true;
-    /**
-     * 服务提供者默认支持的序列化类型，多个用逗号“,”隔开。
-     * JSON可能存在兼容性问题，主要是为了简单测试使用，生产环境建议都是用hessian。
-     */
-    private String serializerType = "hessian";
+    private WinterRpcConfig winterRpcConfig;
     /**
      * 服务提供者默认支持的序列化类型，多个用逗号“,”隔开
      */
@@ -102,6 +79,7 @@ public class WinterRpcBootstrap {
         Objects.requireNonNull(registerManager);
         Objects.requireNonNull(providerDispatcher);
         Objects.requireNonNull(consumerDispatcher);
+        Objects.requireNonNull(winterRpcConfig);
 
         // 持有实例，不能重复
         INSTANCE_MAP.compute(name, (s, winterRpcBootstrap) -> {
@@ -112,7 +90,9 @@ public class WinterRpcBootstrap {
         });
 
         // 先启动监听服务
-        httpServer.startHttpServer(port, workThreadPoolSize);
+        httpServer.startHttpServer(winterRpcConfig.getPort(),
+                winterRpcConfig.getProviderThreadPoolSize(),
+                winterRpcConfig.isUseVirtualThread());
 
         // 真正注册
         // 启动服务注册者的心跳WatchDog
@@ -120,80 +100,64 @@ public class WinterRpcBootstrap {
     }
 
     public String getHttpProtocol() {
-        return httpsEnable ? "https" : "http";
+        return winterRpcConfig.isHttpsEnable() ? "https" : "http";
     }
 
     public String getBindHost() {
-        return IpAddressUtil.getLocalIpv4ByNetCard(ipPrefix);
+        return IpAddressUtil.getLocalIpv4ByNetCard(winterRpcConfig.getIpPrefix());
     }
 
-    public void setName(String name) {
+    public WinterRpcBootstrap setName(String name) {
         this.name = Objects.requireNonNull(StringUtils.trimToNull(name));
+        return this;
     }
 
-
-    public void setApplicationName(String applicationName) {
-        this.applicationName = Objects.requireNonNull(StringUtils.trimToNull(applicationName));
+    public WinterRpcBootstrap setWinterRpcConfig(WinterRpcConfig winterRpcConfig) {
+        this.winterRpcConfig = winterRpcConfig;
+        return this;
     }
 
-    public void setHttpsEnable(boolean httpsEnable) {
-        this.httpsEnable = httpsEnable;
-    }
-
-    public void setLoadBalanceServer(String loadBalanceServer) {
-        this.loadBalanceServer = StringUtils.trimToNull(loadBalanceServer);
-    }
-
-    public void setIpPrefix(String ipPrefix) {
-        this.ipPrefix = StringUtils.trimToNull(ipPrefix);
-    }
-
-    public void setPort(int port) {
-        this.port = port;
-    }
-
-    public void setWorkThreadPoolSize(int workThreadPoolSize) {
-        this.workThreadPoolSize = workThreadPoolSize;
-    }
-
-    public void setSerializerType(String serializerType) {
-        this.serializerType = serializerType;
-    }
-
-    public void setProviderSerializerSupports(String providerSerializerSupports) {
+    public WinterRpcBootstrap setProviderSerializerSupports(String providerSerializerSupports) {
         this.providerSerializerSupports = providerSerializerSupports;
+        return this;
     }
 
-    public void setConsumerSerializerSupports(String consumerSerializerSupports) {
+    public WinterRpcBootstrap setConsumerSerializerSupports(String consumerSerializerSupports) {
         this.consumerSerializerSupports = consumerSerializerSupports;
+        return this;
     }
 
-    public void setHttpServer(HttpServer httpServer) {
+    public WinterRpcBootstrap setHttpServer(HttpServer httpServer) {
         this.httpServer = httpServer;
         this.httpServer.setWinterRpcBootstrap(this);
+        return this;
     }
 
-    public void setRegisterManager(RegisterManager registerManager) {
+    public WinterRpcBootstrap setRegisterManager(RegisterManager registerManager) {
         this.registerManager = registerManager;
         this.registerManager.setWinterRpcBootstrap(this);
+        return this;
     }
 
-    public void setProviderDispatcher(ProviderDispatcher providerDispatcher) {
+    public WinterRpcBootstrap setProviderDispatcher(ProviderDispatcher providerDispatcher) {
         this.providerDispatcher = providerDispatcher;
         this.providerDispatcher.setWinterRpcBootstrap(this);
+        return this;
     }
 
-    public void setConsumerDispatcher(ConsumerDispatcher consumerDispatcher) {
+    public WinterRpcBootstrap setConsumerDispatcher(ConsumerDispatcher consumerDispatcher) {
         this.consumerDispatcher = consumerDispatcher;
         this.consumerDispatcher.setWinterRpcBootstrap(this);
+        return this;
     }
 
-    public void setProviderWatchDog(ProviderWatchDog providerWatchDog) {
+    public WinterRpcBootstrap setProviderWatchDog(ProviderWatchDog providerWatchDog) {
         this.providerWatchDog = providerWatchDog;
         this.providerWatchDog.setWinterRpcBootstrap(this);
+        return this;
     }
 
-    public void setRpcFilters(List<RpcFilter> rpcFilters) {
+    public WinterRpcBootstrap setRpcFilters(List<RpcFilter> rpcFilters) {
         this.rpcFilters = rpcFilters;
         if (this.rpcFilters != null) {
             for (RpcFilter rpcFilter : this.rpcFilters) {
@@ -202,140 +166,68 @@ public class WinterRpcBootstrap {
             // 优先级排序
             this.rpcFilters.sort(RpcFilter::compareTo);
         }
+        return this;
     }
 
-    public void setProviderRouters(List<ProviderRouter> providerRouters) {
+    public WinterRpcBootstrap addRpcFilter(RpcFilter rpcFilter) {
+        this.rpcFilters.add(rpcFilter);
+        this.setRpcFilters(rpcFilters);
+        return this;
+    }
+
+    public WinterRpcBootstrap setProviderRouters(List<ProviderRouter> providerRouters) {
         this.providerRouters = providerRouters;
         if (this.providerRouters != null) {
             for (ProviderRouter providerRouter : this.providerRouters) {
                 providerRouter.setWinterRpcBootstrap(this);
             }
         }
-    }
-
-    public void setConsumerConfigs(List<ConsumerConfig> consumerConfigs) {
-        this.consumerConfigs = consumerConfigs;
-    }
-
-    public void setProviderConfigs(List<ProviderConfig> providerConfigs) {
-        this.providerConfigs = providerConfigs;
-    }
-
-    public WinterRpcBootstrap name(String name) {
-        this.setName(name);
         return this;
     }
 
-    public WinterRpcBootstrap applicationName(String applicationName) {
-        this.setApplicationName(applicationName);
-        return this;
-    }
-
-    public WinterRpcBootstrap vertxHttpServer(HttpServer httpServer) {
-        this.setHttpServer(httpServer);
-        return this;
-    }
-
-    public WinterRpcBootstrap registerManager(RegisterManager registerManager) {
-        this.setRegisterManager(registerManager);
-        return this;
-    }
-
-    public WinterRpcBootstrap providerDispatcher(ProviderDispatcher providerDispatcher) {
-        this.setProviderDispatcher(providerDispatcher);
-        return this;
-    }
-
-    public WinterRpcBootstrap consumerDispatcher(ConsumerDispatcher consumerDispatcher) {
-        this.setConsumerDispatcher(consumerDispatcher);
-        return this;
-    }
-
-
-    public WinterRpcBootstrap providerWatchDog(ProviderWatchDog providerWatchDog) {
-        this.setProviderWatchDog(providerWatchDog);
-        return this;
-    }
-
-    public WinterRpcBootstrap rpcFilter(RpcFilter rpcFilter) {
-        this.rpcFilters.add(rpcFilter);
-        this.setRpcFilters(rpcFilters);
-        return this;
-    }
-
-    public WinterRpcBootstrap rpcFilters(List<RpcFilter> rpcFilters) {
-        this.setRpcFilters(rpcFilters);
-        return this;
-    }
-
-    public WinterRpcBootstrap providerRouter(ProviderRouter providerRouter) {
+    public WinterRpcBootstrap addProviderRouter(ProviderRouter providerRouter) {
         this.providerRouters.add(providerRouter);
         this.setProviderRouters(providerRouters);
         return this;
     }
 
-    public WinterRpcBootstrap providerRouters(List<ProviderRouter> providerRouters) {
-        this.setProviderRouters(providerRouters);
+    public WinterRpcBootstrap setConsumerConfigs(List<ConsumerConfig> consumerConfigs) {
+        this.consumerConfigs = consumerConfigs;
         return this;
     }
 
-    public WinterRpcBootstrap httpsEnable(boolean httpsEnable) {
-        this.setHttpsEnable(httpsEnable);
-        return this;
-    }
-
-    public WinterRpcBootstrap loadBalanceServer(String loadBalanceServer) {
-        this.setLoadBalanceServer(loadBalanceServer);
-        return this;
-    }
-
-    public WinterRpcBootstrap ipPrefix(String ipPrefix) {
-        this.setIpPrefix(ipPrefix);
-        return this;
-    }
-
-    public WinterRpcBootstrap port(int port) {
-        this.setPort(port);
-        return this;
-    }
-
-    public WinterRpcBootstrap workThreadPoolSize(int workThreadPoolSize) {
-        this.workThreadPoolSize = workThreadPoolSize;
-        return this;
-    }
-
-    public WinterRpcBootstrap serializerType(String serializerType) {
-        this.setSerializerType(serializerType);
-        return this;
-    }
-
-    public WinterRpcBootstrap providerSerializerSupports(String providerSerializerSupports) {
-        this.setProviderSerializerSupports(providerSerializerSupports);
-        return this;
-    }
-
-    public WinterRpcBootstrap consumerSerializerSupports(String consumerSerializerSupports) {
-        this.setConsumerSerializerSupports(consumerSerializerSupports);
-        return this;
-    }
-
-    public WinterRpcBootstrap consumerConfig(ConsumerConfig consumerConfig) {
+    public WinterRpcBootstrap addConsumerConfig(ConsumerConfig consumerConfig) {
         this.consumerConfigs.add(Objects.requireNonNull(consumerConfig));
         return this;
     }
 
-    public WinterRpcBootstrap consumerConfigList(List<ConsumerConfig> consumerConfigList) {
-        this.setConsumerConfigs(consumerConfigList);
+    public WinterRpcBootstrap setProviderConfigs(List<ProviderConfig> providerConfigs) {
+        this.providerConfigs = providerConfigs;
         return this;
     }
 
-    public WinterRpcBootstrap providerConfig(ProviderConfig providerConfig) {
+    public WinterRpcBootstrap addProviderConfig(ProviderConfig providerConfig) {
         this.providerConfigs.add(Objects.requireNonNull(providerConfig));
         return this;
     }
 
-    public WinterRpcBootstrap providerConfigList(List<ProviderConfig> providerConfigList) {
-        this.setProviderConfigs(providerConfigList);
-        return this;
+    public String getSerializerType() {
+        return winterRpcConfig.getSerializerType();
+    }
+
+    public String getApplicationName() {
+        return winterRpcConfig.getApplicationName();
+    }
+
+    public String getLoadBalanceServer() {
+        return winterRpcConfig.getLoadBalanceServer();
+    }
+
+    public int getPort() {
+        return winterRpcConfig.getPort();
+    }
+
+    public boolean isLogging() {
+        return winterRpcConfig.isLogging();
     }
 }

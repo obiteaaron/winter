@@ -1,5 +1,6 @@
 package tech.obiteaaron.winter.embed.rpc.spring;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -14,6 +15,7 @@ import tech.obiteaaron.winter.common.tools.http.CommonOkHttpClient;
 import tech.obiteaaron.winter.common.tools.http.OkHttpClientFactory;
 import tech.obiteaaron.winter.embed.registercenter.RegisterService;
 import tech.obiteaaron.winter.embed.rpc.WinterRpcBootstrap;
+import tech.obiteaaron.winter.embed.rpc.WinterRpcConfig;
 import tech.obiteaaron.winter.embed.rpc.executing.ConsumerDispatcher;
 import tech.obiteaaron.winter.embed.rpc.executing.ProviderDispatcher;
 import tech.obiteaaron.winter.embed.rpc.executing.impl.ConsumerDispatcherImpl;
@@ -102,24 +104,20 @@ public class WinterRpcSpringAutoConfiguration implements SmartApplicationListene
 
             // 扩展支持自定义RpcFilter
             Map<String, RpcFilter> rpcFilterMap = applicationContext.getBeansOfType(RpcFilter.class);
-
-            winterRpcBootstrap.vertxHttpServer(httpServer)
-                    .registerManager(registerManager)
-                    .providerDispatcher(providerDispatcher)
-                    .consumerDispatcher(consumerDispatcher)
-                    .providerWatchDog(new ProviderWatchDog())
-                    .providerRouter(providerRouter)
-                    .rpcFilters(new ArrayList<>(rpcFilterMap.values()))
-                    .rpcFilter(new LoggingRpcFilter())
-                    .rpcFilter(new TracingRpcFilter())
-                    .rpcFilter(new MonitorRpcFilter())
-                    .serializerType(winterRpcProperties.getSerializerType())
-                    .ipPrefix(winterRpcProperties.getIpPrefix())
-                    .port(winterRpcProperties.getPort())
-                    .httpsEnable(winterRpcProperties.isHttpsEnable())
-                    .applicationName(winterRpcProperties.getApplicationName())
-                    .loadBalanceServer(winterRpcProperties.getLoadBalanceServer())
-                    .workThreadPoolSize(winterRpcProperties.getProviderThreadPoolSize());
+            // 将Spring的配置复制到实例配置里面
+            WinterRpcConfig winterRpcConfig = new WinterRpcConfig();
+            BeanUtils.copyProperties(winterRpcProperties, winterRpcConfig);
+            winterRpcBootstrap.setHttpServer(httpServer)
+                    .setWinterRpcConfig(winterRpcConfig)
+                    .setRegisterManager(registerManager)
+                    .setProviderDispatcher(providerDispatcher)
+                    .setConsumerDispatcher(consumerDispatcher)
+                    .setProviderWatchDog(new ProviderWatchDog())
+                    .addProviderRouter(providerRouter)
+                    .setRpcFilters(new ArrayList<>(rpcFilterMap.values()))
+                    .addRpcFilter(new LoggingRpcFilter())
+                    .addRpcFilter(new TracingRpcFilter())
+                    .addRpcFilter(new MonitorRpcFilter());
             // 启动
             winterRpcBootstrap.start();
         }

@@ -22,21 +22,25 @@ public class VertxHttpServerImpl extends AbstractVerticle implements HttpServer 
      * 需要确保Netty版本正确，否则可能会无法启动
      * 无vertx-web，自己写简单路由即可，vertx-web的性能好像不太行
      * vertx的三种工作模式：https://vertx.io/docs/vertx-core/java/#_verticle_types
+     * <p>
+     * Vertx的架构是一个Verticle只有一个EventLoop（Thread）在运行。
+     * 如果需要多线程运行，可以部署多实例，符合Vertx架构；
+     * 也可以自己用多线程执行，但返回值不好处理，因为返回值需要回到EventLoop线程才能返回。
+     * 虚拟线程需要Java21支持，可通过参数开启
      *
      * @param port
      */
     @Override
-    public void startHttpServer(int port, int workThreadPoolSize) {
+    public void startHttpServer(int port, int workThreadPoolSize, boolean useVirtualThread) {
         log.info("VertxHttpServer starting");
         VertxOptions vertxOptions = new VertxOptions();
 //        vertxOptions.setEventLoopPoolSize(1);
         vertxOptions.setWorkerPoolSize(workThreadPoolSize);
         Vertx vertx = Vertx.vertx(vertxOptions);
 
-        // TODO 这里还有问题需要优化
         DeploymentOptions options = new DeploymentOptions()
                 .setConfig(JsonObject.of("port", port, "winterRpcBootstrap", new VertxSharableObject(winterRpcBootstrap)))
-                .setThreadingModel(ThreadingModel.WORKER)
+                .setThreadingModel(useVirtualThread ? ThreadingModel.VIRTUAL_THREAD : ThreadingModel.WORKER)
                 // 部署多实例
                 .setInstances(workThreadPoolSize);
         vertx.deployVerticle(VertxHttpServerImpl.class, options);
