@@ -71,17 +71,19 @@ public class DefaultRegisterServiceImpl implements RegisterService {
 
     @Override
     public void unregister(URL url) {
-        String a = null;
+        // TODO 实现下线功能
+        // TODO 实现watchdog下线功能
     }
 
     @Override
     public void subscribe(URL url, NotifyListener listener) {
-        String a = null;
+        // TODO 实现订阅功能
     }
 
     @Override
     public void unsubscribe(URL url, NotifyListener listener) {
-        String a = null;
+        // TODO 实现下线功能
+        // TODO 实现watchdog下线功能
     }
 
     @Override
