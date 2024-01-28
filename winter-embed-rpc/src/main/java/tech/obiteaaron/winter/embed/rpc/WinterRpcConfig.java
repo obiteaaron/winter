@@ -24,8 +24,7 @@ public class WinterRpcConfig {
 
     private int providerThreadPoolSize = 100;
     /**
-     * 默认情况下，配置为0或小于0的数字，则不启用HTTP的连接池，采用直接调用的方式。
-     * 连接池性能比直连可能会略微差一点。
+     * 默认情况下，配置为0或小于0的数字，则不启用HTTP的连接池，采用直接调用的方式。高并发下用连接池性能比直连好一点。
      * 注意：直连的模式下，如果QPS过高，会导致连接被占用完而出错，建议还是用连接池模式。
      */
     private int consumerThreadPoolSize = 0;
