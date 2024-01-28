@@ -23,13 +23,16 @@ public class WinterRpcProperties {
      * JSON可能存在兼容性问题，主要是为了简单测试使用，生产环境建议都是用hessian。
      */
     private String serializerType = "hessian";
-
-    private int providerThreadPoolSize = 100;
     /**
-     * 默认情况下，配置为0或小于0的数字，则不启用HTTP的连接池，采用直接调用的方式。高并发下用连接池性能比直连好一点。
+     * 提供者线程池数量
+     */
+    private int providerThreadPoolSize = 10;
+    /**
+     * 消费者线程池数量（并行量）
+     * 默认值10，高并发下用连接池性能比直连好一点。配置为0或小于0的数字，则不启用HTTP的连接池，采用直接调用的方式。
      * 注意：直连的模式下，如果QPS过高，会导致连接被占用完而出错，建议还是用连接池模式。
      */
-    private int consumerThreadPoolSize = 100;
+    private int consumerThreadPoolSize = 10;
     /**
      * 客户端超时时间，毫秒
      */
