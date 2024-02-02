@@ -23,6 +23,7 @@ public class DefaultRegisterServiceImpl implements RegisterService {
 
     public DefaultRegisterServiceImpl(ConfigManager configManager) {
         this.configManager = configManager;
+        DefaultRegisterWatchDog.INSTANCE.start(configManager);
     }
 
     @Override

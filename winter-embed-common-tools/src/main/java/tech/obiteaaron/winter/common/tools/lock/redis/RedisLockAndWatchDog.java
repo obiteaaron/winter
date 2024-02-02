@@ -3,6 +3,7 @@ package tech.obiteaaron.winter.common.tools.lock.redis;
 import io.lettuce.core.ScriptOutputType;
 import io.lettuce.core.api.sync.RedisCommands;
 import lombok.extern.slf4j.Slf4j;
+import tech.obiteaaron.winter.common.tools.threadpool.ThreadUtil;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -70,6 +71,7 @@ public class RedisLockAndWatchDog extends RedisLock {
     private static final ScheduledExecutorService EXECUTOR_SERVICE = Executors.newScheduledThreadPool(1);
 
     static {
+        ThreadUtil.registerForShutdown(EXECUTOR_SERVICE);
         EXECUTOR_SERVICE.scheduleWithFixedDelay(() -> {
             try {
                 RedisCommands<String, String> redisCommands = RedisConnectionHolder.syncRedisCommands();

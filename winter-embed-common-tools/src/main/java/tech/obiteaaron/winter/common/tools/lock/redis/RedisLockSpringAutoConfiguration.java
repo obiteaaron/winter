@@ -37,8 +37,8 @@ public class RedisLockSpringAutoConfiguration {
     @ConfigurationProperties(prefix = "tech.obiteaaron.winter.distributed.lock.redis")
     public static class RedisLockProperty {
         private String host;
-        private int port;
+        private int port = 6379;
         private String password;
-        private int database;
+        private int database = 0;
     }
 }

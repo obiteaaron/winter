@@ -20,4 +20,13 @@ public final class ConfigManager {
     public int modify(Config config) {
         return configDatabaseRepository.modify(config);
     }
+
+    /**
+     * 物理删除，注意数据安全
+     * @param config 需要删除的配置
+     * @return 删除数量
+     */
+    public int delete(Config config) {
+        return configDatabaseRepository.delete(config);
+    }
 }

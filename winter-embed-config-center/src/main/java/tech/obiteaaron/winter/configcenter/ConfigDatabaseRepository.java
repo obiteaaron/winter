@@ -61,6 +61,16 @@ final class ConfigDatabaseRepository {
         }
     }
 
+    public int delete(Config config) {
+        Objects.requireNonNull(config);
+        Long id = Objects.requireNonNull(config.getId());
+        String group = Objects.requireNonNull(StringUtils.trimToNull(config.getGroupName()));
+        String name = Objects.requireNonNull(StringUtils.trimToNull(config.getName()));
+
+        String sql = "delete from winter_embed_config_center where `id` = ? and `name` = ? and `group_name` = ?";
+        return jdbcTemplate().update(sql, id, name, group);
+    }
+
     public List<Config> queryAll() {
         String sql = "select `id`, `name`, `group_name` as groupName, `content`, `gmt_create` as gmtCreate, `gmt_modified` as gmtModified from winter_embed_config_center order by gmt_modified asc";
         return jdbcTemplate().query(sql, new BeanPropertyRowMapper<>(Config.class));
