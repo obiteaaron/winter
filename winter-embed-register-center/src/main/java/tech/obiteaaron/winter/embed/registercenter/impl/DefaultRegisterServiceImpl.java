@@ -81,8 +81,31 @@ public class DefaultRegisterServiceImpl implements RegisterService {
 
     @Override
     public void unregister(URL url) {
-        // TODO 实现下线功能
-        // TODO 实现watchdog下线功能
+        // TODO 暂时忽略，由于数据库连接池会先关闭，这里就先不做了
+    }
+
+    public void unregister0(URL url) {
+        String name = parseNameRegister(url);
+        String group = parseGroup(url);
+
+        // 心跳3秒内的算有效
+        long validProviderTime = System.currentTimeMillis() - 3000;
+        // 直接从本地查，本地拥有全量数据
+        List<Config> allConfigs = ConfigCenter.getAllConfigs();
+        List<Config> unregisterUrls = allConfigs.stream()
+                .filter(item -> Objects.equals(item.getGroupName(), group))
+                .filter(item -> Objects.equals(item.getName(), name))
+                .collect(Collectors.toList());
+        doUnregister(unregisterUrls);
+    }
+
+    void doUnregister(List<Config> configs) {
+        for (Config invalidUrl : configs) {
+            int delete = configManager.delete(invalidUrl);
+            if (delete != 1) {
+                log.warn("DefaultRegisterServiceImpl delete result invalid id={}, name={}, groupName={}, result={}", invalidUrl.getId(), invalidUrl.getName(), invalidUrl.getGroupName(), delete);
+            }
+        }
     }
 
     @Override

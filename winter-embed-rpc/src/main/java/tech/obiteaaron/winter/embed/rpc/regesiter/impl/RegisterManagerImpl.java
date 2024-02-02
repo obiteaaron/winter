@@ -38,6 +38,25 @@ public class RegisterManagerImpl implements RegisterManager {
     @Override
     public void register(ProviderConfig providerConfig) {
         // 注册到注册中心
+        URL url = providerConfigToUrl(providerConfig);
+        registerService.register(url);
+
+        // 注册到本地
+        ReflectionUtils.doWithMethods(providerConfig.getInterfaceClass(), method -> {
+            String methodSignature = MethodUtil.generateMethodSignature(method);
+            providerMap.compute(providerConfig.getInterfaceName(), (s, stringObjectMap) -> {
+                if (stringObjectMap == null) {
+                    Map<String, Pair<Object, Method>> map = new ConcurrentHashMap<>();
+                    map.put(methodSignature, Pair.of(providerConfig.getInterfaceImpl(), method));
+                    return map;
+                }
+                stringObjectMap.putIfAbsent(methodSignature, Pair.of(providerConfig.getInterfaceImpl(), method));
+                return stringObjectMap;
+            });
+        });
+    }
+
+    private URL providerConfigToUrl(ProviderConfig providerConfig) {
         Map<String, String> parameterMap = ImmutableMap.of(
                 "applicationName", providerConfig.getApplicationName(),
                 "version", providerConfig.getVersion(),
@@ -55,21 +74,7 @@ public class RegisterManagerImpl implements RegisterManager {
                 .path(providerConfig.getInterfaceName())
                 .parameterMap(parameterMap)
                 .build();
-        registerService.register(url);
-
-        // 注册到本地
-        ReflectionUtils.doWithMethods(providerConfig.getInterfaceClass(), method -> {
-            String methodSignature = MethodUtil.generateMethodSignature(method);
-            providerMap.compute(providerConfig.getInterfaceName(), (s, stringObjectMap) -> {
-                if (stringObjectMap == null) {
-                    Map<String, Pair<Object, Method>> map = new ConcurrentHashMap<>();
-                    map.put(methodSignature, Pair.of(providerConfig.getInterfaceImpl(), method));
-                    return map;
-                }
-                stringObjectMap.putIfAbsent(methodSignature, Pair.of(providerConfig.getInterfaceImpl(), method));
-                return stringObjectMap;
-            });
-        });
+        return url;
     }
 
     private String generatorAllMethodSignature(ProviderConfig providerConfig) {
@@ -104,6 +109,8 @@ public class RegisterManagerImpl implements RegisterManager {
     @Override
     public void unregister(ProviderConfig providerConfig) {
         log.info("unregister {}", JsonUtil.toJsonString(providerConfig));
+        URL url = providerConfigToUrl(providerConfig);
+        registerService.unregister(url);
     }
 
     @Override

@@ -67,12 +67,7 @@ public class DefaultRegisterWatchDog {
                 .filter(item -> item.getGmtModified() == null || item.getGmtModified().getTime() < validProviderTime)
                 .collect(Collectors.toList());
         for (Config invalidUrl : invalidUrls) {
-            Config config = Config.builder()
-                    .id(invalidUrl.getId())
-                    .name(invalidUrl.getName())
-                    .groupName(invalidUrl.getGroupName())
-                    .build();
-            int delete = configManager.delete(config);
+            int delete = configManager.delete(invalidUrl);
             if (delete != 1) {
                 log.warn("DefaultRegisterWatchDog delete result invalid id={}, name={}, groupName={}, result={}", invalidUrl.getId(), invalidUrl.getName(), invalidUrl.getGroupName(), delete);
             }
