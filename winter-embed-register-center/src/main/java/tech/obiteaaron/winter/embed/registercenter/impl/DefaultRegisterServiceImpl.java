@@ -13,6 +13,7 @@ import tech.obiteaaron.winter.embed.registercenter.model.URL;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -52,11 +53,19 @@ public class DefaultRegisterServiceImpl implements RegisterService {
     }
 
     private String parseNameRegister(URL url) {
-        return url.getPath() + ":" + url.getParameterMap().get("version") + ":" + url.getIp();
+        StringJoiner stringJoiner = new StringJoiner(":");
+        return stringJoiner.add(url.getPath())
+                .add(Objects.requireNonNull(url.getParameterMap().get("version")))
+                .add(url.getIp())
+                .add(String.valueOf(url.getPort()))
+                .toString();
     }
 
     private String parseNameQuery(URL url) {
-        return url.getPath() + ":" + url.getParameterMap().get("version");
+        StringJoiner stringJoiner = new StringJoiner(":");
+        return stringJoiner.add(url.getPath())
+                .add(Objects.requireNonNull(url.getParameterMap().get("version")))
+                .toString();
     }
 
     private String parseGroup(URL url) {
