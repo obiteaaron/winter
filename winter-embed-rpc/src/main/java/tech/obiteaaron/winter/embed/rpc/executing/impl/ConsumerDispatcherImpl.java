@@ -59,12 +59,12 @@ public class ConsumerDispatcherImpl implements ConsumerDispatcher {
         String serializerType = WinterSerializeFactory.resolveSerializerType(serializerSupports, winterRpcBootstrap.getConsumerSerializerSupports(), winterRpcBootstrap.getSerializerType());
         WinterSerializer winterSerializer = WinterSerializeFactory.getWinterSerializer(serializerType);
         invokeContext.setSerializerType(serializerType);
-        String serializedContext = winterSerializer.serializer(invokeContext);
 
         // 构造调用链
         FilterChainImpl filterChain = new FilterChainImpl();
         filterChain.setRpcFilters(winterRpcBootstrap.getRpcFilters());
         filterChain.setRealInvokeFilter(new FilterChainImpl.RealInvokeFilter(() -> {
+            String serializedContext = winterSerializer.serializer(invokeContext);
             // 调用远程服务
             String result = doInvoke(invokeContext, providerUrl, serializedContext);
             invokeContext.setResult(result);

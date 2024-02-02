@@ -37,4 +37,10 @@ public class WinterRpcProperties {
      * 客户端超时时间，毫秒
      */
     private int consumerTimeoutMilliSecond = 3000;
+    /**
+     * 是否使用虚拟线程，需要Java21支持，且需要注意ThreadLocal的使用
+     */
+    private boolean useVirtualThread = false;
+
+    private boolean logging = false;
 }
