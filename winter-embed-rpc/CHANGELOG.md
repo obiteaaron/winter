@@ -3,7 +3,7 @@
 发布日期：2024年01月26日  
 发布内容：  
 
-- 提供服务注册能力，依赖config-center
+- 提供服务注册能力，依赖winter-embed-config-center
 - 提供服务远程调用能力，基于HTTP(S)服务，采用VertX
 - 提供基于注解的服务提供者`@WinterProvider`和服务消费者`@WinterConsumer`的定义方式，依赖Spring
 - 提供多实例支持，多实例之间相互不影响
