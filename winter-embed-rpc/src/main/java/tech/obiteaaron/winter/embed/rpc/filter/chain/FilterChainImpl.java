@@ -24,7 +24,10 @@ public class FilterChainImpl implements FilterChain {
     @Override
     public void invoke(String invokeStage, URL url, InvokeContext context) {
         if (index < size) {
-            rpcFilters.get(index++).invoke(invokeStage, url, context, this);
+            RpcFilter rpcFilter = rpcFilters.get(index++);
+            if (rpcFilter.supportStageList() != null && rpcFilter.supportStageList().contains(invokeStage)) {
+                rpcFilter.invoke(invokeStage, url, context, this);
+            }
         } else {
             realInvokeFilter.invoke(invokeStage, url, context, this);
         }
@@ -41,7 +44,7 @@ public class FilterChainImpl implements FilterChain {
         this.realInvokeFilter = realInvokeFilter;
     }
 
-    public static class RealInvokeFilter implements RpcFilter {
+    public static final class RealInvokeFilter implements RpcFilter {
 
         private final Runnable runnable;
 
@@ -62,6 +65,12 @@ public class FilterChainImpl implements FilterChain {
         @Override
         public void invoke(String invokeStage, URL url, InvokeContext context, FilterChain filterChain) {
             runnable.run();
+        }
+
+        @Override
+        public int order() {
+            // 最低优先级，也就是最后执行
+            return Integer.MAX_VALUE;
         }
     }
 }

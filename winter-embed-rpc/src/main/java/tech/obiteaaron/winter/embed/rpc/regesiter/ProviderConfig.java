@@ -23,4 +23,6 @@ public class ProviderConfig {
 
     String version;
 
+    String[] tags;
+
 }

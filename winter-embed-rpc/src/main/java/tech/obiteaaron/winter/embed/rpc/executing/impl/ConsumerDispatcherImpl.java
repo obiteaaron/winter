@@ -39,6 +39,7 @@ public class ConsumerDispatcherImpl implements ConsumerDispatcher {
                 .interfaceName(interfaceName)
                 .group(annotation.group())
                 .version(annotation.version())
+                .tags(annotation.tags())
                 .build();
 
         // 查提供者
@@ -54,16 +55,15 @@ public class ConsumerDispatcherImpl implements ConsumerDispatcher {
         invokeContext.setTraceId(Slf4jMdcUtil.getTraceId());
         invokeContext.setApplicationName(winterRpcBootstrap.getApplicationName());
 
-        // 序列化参数
-        String serializerSupports = providerUrl.getParameterMap().get("serializerSupports");
-        String serializerType = WinterSerializeFactory.resolveSerializerType(serializerSupports, winterRpcBootstrap.getConsumerSerializerSupports(), winterRpcBootstrap.getSerializerType());
-        WinterSerializer winterSerializer = WinterSerializeFactory.getWinterSerializer(serializerType);
-        invokeContext.setSerializerType(serializerType);
-
         // 构造调用链
         FilterChainImpl filterChain = new FilterChainImpl();
         filterChain.setRpcFilters(winterRpcBootstrap.getRpcFilters());
         filterChain.setRealInvokeFilter(new FilterChainImpl.RealInvokeFilter(() -> {
+            // 序列化参数
+            String serializerSupports = providerUrl.getParameterMap().get("serializerSupports");
+            String serializerType = WinterSerializeFactory.resolveSerializerType(serializerSupports, winterRpcBootstrap.getConsumerSerializerSupports(), winterRpcBootstrap.getSerializerType());
+            WinterSerializer winterSerializer = WinterSerializeFactory.getWinterSerializer(serializerType);
+            invokeContext.setSerializerType(serializerType);
             String serializedContext = winterSerializer.serializer(invokeContext);
             // 调用远程服务
             String result = doInvoke(invokeContext, providerUrl, serializedContext);
@@ -72,8 +72,8 @@ public class ConsumerDispatcherImpl implements ConsumerDispatcher {
 
         filterChain.invoke(InvokerStage.CONSUMER.name(), providerUrl, invokeContext);
 
-        // 反序列化
-        return deserializer(method, serializerType, (String) invokeContext.getResult());
+        // 反序列化，是否应该放在RealInvokeFilter里面？
+        return deserializer(method, invokeContext.getSerializerType(), (String) invokeContext.getResult());
     }
 
     /**
@@ -81,13 +81,11 @@ public class ConsumerDispatcherImpl implements ConsumerDispatcher {
      */
     @NotNull
     private URL resolveRouterUrl(WinterConsumer annotation, List<URL> providerList, ConsumerConfig consumerConfig, String interfaceName) {
-        List<URL> providerListResolve = null;
+        List<URL> providerListResolve = providerList;
         List<ProviderRouter> providerRouters = winterRpcBootstrap.getProviderRouters();
-        if (CollectionUtils.isEmpty(providerRouters)) {
-            providerListResolve = providerList;
-        } else {
+        if (!CollectionUtils.isEmpty(providerRouters)) {
             for (ProviderRouter providerRouter : providerRouters) {
-                providerListResolve = providerRouter.resolve(consumerConfig, providerList);
+                providerListResolve = providerRouter.resolve(consumerConfig, providerListResolve);
             }
         }
         if (CollectionUtils.isEmpty(providerListResolve)) {

@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableMap;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.util.ReflectionUtils;
 import tech.obiteaaron.winter.common.tools.json.JsonUtil;
@@ -62,6 +64,7 @@ public class RegisterManagerImpl implements RegisterManager {
                 "version", providerConfig.getVersion(),
                 "group", providerConfig.getGroup(),
                 "type", "provider",
+                "tags", ObjectUtils.firstNonNull(StringUtils.join(providerConfig.getTags(), ","), ""),
                 "methodSignatures", generatorAllMethodSignature(providerConfig));
         if (winterRpcBootstrap.getLoadBalanceServer() != null) {
             parameterMap = new HashMap<>(parameterMap);
@@ -100,7 +103,8 @@ public class RegisterManagerImpl implements RegisterManager {
                         "applicationName", consumerConfig.getApplicationName(),
                         "version", consumerConfig.getVersion(),
                         "group", consumerConfig.getGroup(),
-                        "type", "consumer"))
+                        "type", "consumer",
+                        "tags", ObjectUtils.firstNonNull(StringUtils.join(consumerConfig.getTags(), ","), "")))
                 .build();
         registerService.register(url);
         // 然后再订阅一下

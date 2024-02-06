@@ -20,4 +20,6 @@ public class ConsumerConfig {
     String group;
 
     String version;
+
+    String[] tags;
 }

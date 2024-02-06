@@ -181,6 +181,8 @@ public class WinterRpcBootstrap {
             for (ProviderRouter providerRouter : this.providerRouters) {
                 providerRouter.setWinterRpcBootstrap(this);
             }
+            // 优先级排序
+            this.providerRouters.sort(ProviderRouter::compareTo);
         }
         return this;
     }

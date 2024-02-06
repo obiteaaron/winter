@@ -109,12 +109,13 @@ public class WinterRpcSpringBeanFactoryPostProcessor implements BeanFactoryPostP
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
         Class<?> targetClass = AopUtils.getTargetClass(bean);
         WinterProvider annotation = targetClass.getAnnotation(WinterProvider.class);
-        String[] providerInterfaces = null;
+        String[] providerInterfaces = null, tags = null;
         String version = null, group = null;
         if (annotation != null) {
             providerInterfaces = annotation.providerInterfaces();
             version = annotation.version();
             group = annotation.group();
+            tags = annotation.tags();
         } else {
             Pair<String, Map<String, Object>> annotationAttributes = beanAnnotaionMap.get(beanName);
             if (annotationAttributes == null) {
@@ -123,6 +124,7 @@ public class WinterRpcSpringBeanFactoryPostProcessor implements BeanFactoryPostP
             Map<String, Object> value = annotationAttributes.getValue();
             version = (String) value.get("version");
             group = (String) value.get("group");
+            tags = (String[]) value.get("tags");
             providerInterfaces = (String[]) value.get("providerInterfaces");
             if (providerInterfaces == null || providerInterfaces.length == 0) {
                 providerInterfaces = new String[]{annotationAttributes.getKey()};
@@ -146,6 +148,7 @@ public class WinterRpcSpringBeanFactoryPostProcessor implements BeanFactoryPostP
                     .interfaceImpl(bean)
                     .version(version)
                     .group(group)
+                    .tags(tags)
                     .build();
             // 延迟到 ContextRefreshedEvent 事件才注册，确保 bean 都正确初始化成功了，以确保能对外提供服务
             winterRpcBootstrap.addProviderConfig(providerConfig);
