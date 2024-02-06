@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * 支持多实例，各用各的，多实例之间相互隔离，互不影响，各注册各的服务提供者和消费者。
@@ -74,7 +75,12 @@ public class WinterRpcBootstrap {
         return new WinterRpcBootstrap(name);
     }
 
+    private final AtomicBoolean initialized = new AtomicBoolean();
+
     public void start() {
+        if (!initialized.compareAndSet(false, true)) {
+            return;
+        }
         Objects.requireNonNull(httpServer);
         Objects.requireNonNull(registerManager);
         Objects.requireNonNull(providerDispatcher);
