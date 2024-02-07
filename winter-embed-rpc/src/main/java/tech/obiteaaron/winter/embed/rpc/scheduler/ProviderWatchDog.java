@@ -42,18 +42,21 @@ public class ProviderWatchDog {
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {
+                // 关闭心跳线程池
+                scheduledExecutorService.shutdown();
+                // 阻塞3秒，确保服务已经下线
+                try {
+                    scheduledExecutorService.awaitTermination(5, TimeUnit.SECONDS);
+                    TimeUnit.SECONDS.sleep(3);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
                 // 停机时解除注册
                 for (ProviderConfig providerConfig : winterRpcBootstrap.getProviderConfigs()) {
                     winterRpcBootstrap.getRegisterManager().unregister(providerConfig);
                 }
                 for (ConsumerConfig consumerConfig : winterRpcBootstrap.getConsumerConfigs()) {
                     winterRpcBootstrap.getRegisterManager().unsubscribe(consumerConfig);
-                }
-                // 阻塞5秒，确保服务已经下线
-                try {
-                    TimeUnit.SECONDS.sleep(5);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
                 }
             }
         }));
