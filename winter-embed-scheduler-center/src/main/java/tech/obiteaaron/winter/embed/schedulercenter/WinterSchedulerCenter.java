@@ -1,16 +1,17 @@
 package tech.obiteaaron.winter.embed.schedulercenter;
 
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import tech.obiteaaron.winter.common.tools.threadpool.MutableThreadPoolExecutorFactory;
-import tech.obiteaaron.winter.common.tools.threadpool.ThreadUtil;
+import tech.obiteaaron.winter.embed.rpc.WinterRpcBootstrap;
+import tech.obiteaaron.winter.embed.schedulercenter.executor.BeanParser;
 import tech.obiteaaron.winter.embed.schedulercenter.model.WinterJob;
 import tech.obiteaaron.winter.embed.schedulercenter.repository.WinterJobInstanceRepository;
 import tech.obiteaaron.winter.embed.schedulercenter.repository.WinterJobInstanceTaskRepository;
 import tech.obiteaaron.winter.embed.schedulercenter.repository.WinterJobRepository;
+import tech.obiteaaron.winter.embed.schedulercenter.repository.impl.memory.WinterJobMemoryRepositoryImpl;
+import tech.obiteaaron.winter.embed.schedulercenter.scheduler.WinterSchedulerExecutor;
+import tech.obiteaaron.winter.embed.schedulercenter.scheduler.WinterSchedulerRegister;
 
-import java.util.Date;
-import java.util.concurrent.*;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
@@ -20,74 +21,78 @@ public final class WinterSchedulerCenter {
      */
     public static final WinterSchedulerCenter INSTANCE = new WinterSchedulerCenter();
 
-    private final ScheduledExecutorService REGISTER_POOL = Executors.newSingleThreadScheduledExecutor();
-
-    private final ExecutorService SCHEDULER_POOL = MutableThreadPoolExecutorFactory.newCallerRunPool("WinterSchedulerCenter#Scheduler#" + this.hashCode(), () -> 16, 0);
-
-    private final LinkedBlockingQueue<WinterJob> waitRegisterList = new LinkedBlockingQueue<>();
-
     private static final AtomicBoolean initialized = new AtomicBoolean();
 
-    @Setter
-    private WinterJobRepository winterJobRepository;
+    private WinterJobRepository winterJobRepository = new WinterJobMemoryRepositoryImpl();
 
-    @Setter
     private WinterJobInstanceRepository winterJobInstanceRepository;
 
-    @Setter
     private WinterJobInstanceTaskRepository winterJobInstanceTaskRepository;
+    /**
+     * 基于RPC的实例提供集群内的多机分发功能，以实现Map、MapReduce任务功能
+     */
+    private WinterRpcBootstrap winterRpcBootstrap;
+
+    private BeanParser beanParser;
+
+    private final WinterSchedulerRegister winterSchedulerRegister = new WinterSchedulerRegister();
+
+    private final WinterSchedulerExecutor winterSchedulerExecutor = new WinterSchedulerExecutor();
 
     private WinterSchedulerCenter() {
     }
 
-    public void addWinterJob(JobProcessor jobProcessor) {
-        WinterJob winterJob = toWinterJob(jobProcessor);
-        addWinterJob(winterJob);
+    public WinterJob addWinterJob(JobProcessor jobProcessor) {
+        return winterSchedulerRegister.addWinterJob(jobProcessor);
     }
 
-    public void addWinterJob(WinterJob winterJob) {
-        waitRegisterList.add(winterJob);
+    public WinterJob addWinterJob(WinterJob winterJob) {
+        return winterSchedulerRegister.addWinterJob(winterJob);
     }
 
-    private WinterJob toWinterJob(JobProcessor jobProcessor) {
-        // TODO 转换
-        return null;
+    public void triggerManual(WinterJob winterJob, String manualParams) {
+        winterSchedulerExecutor.triggerManual(winterJob, manualParams);
     }
 
     public void start() {
         if (!initialized.compareAndSet(false, true)) {
             return;
         }
-        REGISTER_POOL.scheduleWithFixedDelay(() -> {
-            ThreadUtil.wrapperForNoThrowable(() -> {
-                while (true) {
-                    WinterJob poll = waitRegisterList.poll();
-                    if (poll == null) {
-                        return;
-                    }
-                    // TODO 注册Job
-                }
-            });
-        }, 1, 10, TimeUnit.SECONDS);
-        SCHEDULER_POOL.submit(() -> {
-            // TODO 后台执行调度，需要一些默认的线程持续运行以确保定时任务会被调度到
-            // 查询出未来一段时间内需要调度的所有任务，然后放入时间轮调度
-        });
+        // 启动注册服务
+        winterSchedulerRegister.setWinterJobRepository(Objects.requireNonNull(winterJobRepository, "winterJobRepository cannot be null"));
+        winterSchedulerRegister.start();
+        // 启动调度执行服务
+        winterSchedulerExecutor.setWinterJobRepository(Objects.requireNonNull(winterJobRepository, "winterJobRepository cannot be null"));
+        winterSchedulerExecutor.setWinterJobInstanceRepository(winterJobInstanceRepository);
+        winterSchedulerExecutor.setWinterJobInstanceTaskRepository(winterJobInstanceTaskRepository);
+        winterSchedulerExecutor.setBeanParser(Objects.requireNonNull(beanParser, "beanParser cannot be null"));
+        winterSchedulerExecutor.start();
+        // TODO 初始化RPC独享实例，用Map、MapReduce任务
+//        winterRpcBootstrap.start();
     }
 
-
-    public void doAddWinterJob(WinterJob winterJob) {
-        try {
-            winterJobRepository.save(winterJob);
-            Date nextTriggerTime = calcNextTriggerTime(winterJob);
-        } catch (Throwable t) {
-            log.error("register job exception", t);
-        }
+    public WinterSchedulerCenter setWinterJobRepository(WinterJobRepository winterJobRepository) {
+        this.winterJobRepository = Objects.requireNonNull(winterJobRepository, "winterJobRepository cannot be null");
+        return this;
     }
 
-    private Date calcNextTriggerTime(WinterJob winterJob) {
-        // TODO 转换
-        return null;
+    public WinterSchedulerCenter setWinterJobInstanceRepository(WinterJobInstanceRepository winterJobInstanceRepository) {
+        this.winterJobInstanceRepository = Objects.requireNonNull(winterJobInstanceRepository, "winterJobInstanceRepository cannot be null");
+        return this;
     }
 
+    public WinterSchedulerCenter setWinterJobInstanceTaskRepository(WinterJobInstanceTaskRepository winterJobInstanceTaskRepository) {
+        this.winterJobInstanceTaskRepository = Objects.requireNonNull(winterJobInstanceTaskRepository, "winterJobInstanceTaskRepository cannot be null");
+        return this;
+    }
+
+    public WinterSchedulerCenter setWinterRpcBootstrap(WinterRpcBootstrap winterRpcBootstrap) {
+        this.winterRpcBootstrap = winterRpcBootstrap;
+        return this;
+    }
+
+    public WinterSchedulerCenter setBeanParser(BeanParser beanParser) {
+        this.beanParser = Objects.requireNonNull(beanParser, "beanParser cannot be null");
+        return this;
+    }
 }

@@ -37,7 +37,6 @@ public class ThreadUtil {
     }
 
     public static Runnable wrapperForNoThrowable(Runnable runnable) {
-        String traceId = TraceUtil.getTraceId();
         return () -> {
             try {
                 runnable.run();

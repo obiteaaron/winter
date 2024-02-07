@@ -11,9 +11,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.SmartApplicationListener;
 import tech.obiteaaron.winter.embed.schedulercenter.WinterSchedulerCenter;
+import tech.obiteaaron.winter.embed.schedulercenter.executor.SpringBeanParserImpl;
 import tech.obiteaaron.winter.embed.schedulercenter.repository.WinterJobInstanceRepository;
 import tech.obiteaaron.winter.embed.schedulercenter.repository.WinterJobInstanceTaskRepository;
 import tech.obiteaaron.winter.embed.schedulercenter.repository.WinterJobRepository;
+import tech.obiteaaron.winter.embed.schedulercenter.repository.impl.memory.WinterJobInstanceMemoryRepositoryImpl;
+import tech.obiteaaron.winter.embed.schedulercenter.repository.impl.memory.WinterJobInstanceTaskMemoryRepositoryImpl;
+import tech.obiteaaron.winter.embed.schedulercenter.repository.impl.memory.WinterJobMemoryRepositoryImpl;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
@@ -39,13 +43,17 @@ public class WinterSchedulerCenterSpringAutoConfiguration implements SmartApplic
     @Override
     public void onApplicationEvent(ApplicationEvent event) {
         if (atomicBoolean.compareAndSet(false, true)) {
-            WinterJobRepository winterJobRepository = getBeanPrimary(WinterJobRepository.class, () -> null);
-            WinterJobInstanceRepository winterJobInstanceRepository = getBeanPrimary(WinterJobInstanceRepository.class, () -> null);
-            WinterJobInstanceTaskRepository winterJobInstanceTaskRepository = getBeanPrimary(WinterJobInstanceTaskRepository.class, () -> null);
-            WinterSchedulerCenter.INSTANCE.setWinterJobRepository(winterJobRepository);
-            WinterSchedulerCenter.INSTANCE.setWinterJobInstanceRepository(winterJobInstanceRepository);
-            WinterSchedulerCenter.INSTANCE.setWinterJobInstanceTaskRepository(winterJobInstanceTaskRepository);
-            WinterSchedulerCenter.INSTANCE.start();
+            WinterJobRepository winterJobRepository = getBeanPrimary(WinterJobRepository.class, WinterJobMemoryRepositoryImpl::new);
+            WinterJobInstanceRepository winterJobInstanceRepository = getBeanPrimary(WinterJobInstanceRepository.class, WinterJobInstanceMemoryRepositoryImpl::new);
+            WinterJobInstanceTaskRepository winterJobInstanceTaskRepository = getBeanPrimary(WinterJobInstanceTaskRepository.class, WinterJobInstanceTaskMemoryRepositoryImpl::new);
+
+            // 启动调度中心后台任务
+            WinterSchedulerCenter.INSTANCE
+                    .setWinterJobRepository(winterJobRepository)
+                    .setWinterJobInstanceRepository(winterJobInstanceRepository)
+                    .setWinterJobInstanceTaskRepository(winterJobInstanceTaskRepository)
+                    .setBeanParser(new SpringBeanParserImpl())
+                    .start();
         }
     }
 

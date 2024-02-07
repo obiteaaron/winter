@@ -34,6 +34,7 @@
         <spring-framework.version>5.2.15.RELEASE</spring-framework.version>
         <jackson.version>2.13.3</jackson.version>
         <netty.version>4.1.106.Final</netty.version>
+        <cron-utils.version>9.2.1</cron-utils.version>
     </properties>
 
     <dependencies>
@@ -191,7 +192,6 @@
                 <artifactId>jackson-core</artifactId>
                 <version>${jackson.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>com.github.ben-manes.caffeine</groupId>
                 <artifactId>caffeine</artifactId>
@@ -227,21 +227,26 @@
                 <artifactId>commons-collections4</artifactId>
                 <version>4.3</version>
             </dependency>
-
             <dependency>
                 <groupId>io.lettuce</groupId>
                 <artifactId>lettuce-core</artifactId>
                 <version>6.1.8.RELEASE</version>
             </dependency>
             <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>4.13.1</version>
+                <groupId>com.cronutils</groupId>
+                <artifactId>cron-utils</artifactId>
+                <version>${cron-utils.version}</version>
             </dependency>
             <dependency>
                 <groupId>mysql</groupId>
                 <artifactId>mysql-connector-java</artifactId>
                 <version>8.0.28</version>
+            </dependency>
+
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.13.1</version>
             </dependency>
 
             <!-- spring boot start-->

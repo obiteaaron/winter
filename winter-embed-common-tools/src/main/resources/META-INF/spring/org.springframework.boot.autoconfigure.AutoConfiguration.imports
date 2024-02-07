@@ -1,1 +1,2 @@
 tech.obiteaaron.winter.common.tools.lock.redis.RedisLockSpringAutoConfiguration
+tech.obiteaaron.winter.common.tools.spring.SpringContextHolder.AutoConfiguration

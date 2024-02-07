@@ -13,12 +13,20 @@ public class WinterJob {
     private Long id;
     private Date gmtCreate;
     private Date gmtModified;
-    /**
-     * 最后一次执行的时间
-     */
-    private Date lastExecutedTime;
 
     private String name;
+    /**
+     * 开始时间
+     */
+    private Date beginTime;
+    /**
+     * 结束时间
+     */
+    private Date endTime;
+    /**
+     * 下一次执行的时间
+     */
+    private Date nextTriggerTime;
     /**
      * 实际执行的类名
      */

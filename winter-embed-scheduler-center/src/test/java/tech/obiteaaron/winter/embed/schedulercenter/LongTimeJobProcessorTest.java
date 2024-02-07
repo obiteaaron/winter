@@ -5,11 +5,11 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-@WinterScheduled(fixedDelay = 20_000)
-public class SimpleJobProcessorTest implements SimpleJobProcessor {
+@WinterScheduled(cron = "*/20 * * * * ?")
+public class LongTimeJobProcessorTest implements LongTimeJobProcessor {
 
     @Override
     public void process(JobContext jobContext) {
-        log.info("SimpleJobProcessorTest process " + System.currentTimeMillis());
+        log.info("LongTimeJobProcessorTest process " + System.currentTimeMillis());
     }
 }

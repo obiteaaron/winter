@@ -1,11 +1,13 @@
 package tech.obiteaaron.winter.embed.schedulercenter.repository;
 
-import tech.obiteaaron.winter.embed.schedulercenter.model.WinterJob;
-import tech.obiteaaron.winter.embed.schedulercenter.repository.request.WinterJobQuery;
+import tech.obiteaaron.winter.embed.schedulercenter.model.WinterJobInstance;
+import tech.obiteaaron.winter.embed.schedulercenter.repository.request.WinterJobInstanceQuery;
 
 public interface WinterJobInstanceRepository {
 
-    void save(WinterJob winterJob);
+    boolean save(WinterJobInstance winterJobInstance);
 
-    void queryAll(WinterJobQuery winterJobQuery);
+    WinterJobInstance queryById(long instanceId);
+
+    void queryAll(WinterJobInstanceQuery winterJobInstanceQuery);
 }
