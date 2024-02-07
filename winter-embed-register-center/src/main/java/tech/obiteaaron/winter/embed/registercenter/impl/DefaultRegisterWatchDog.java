@@ -37,7 +37,7 @@ public class DefaultRegisterWatchDog {
         DefaultRegisterWatchDog.configManager = configManager;
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
         ThreadUtil.registerForShutdown(scheduledExecutorService);
-        scheduledExecutorService.scheduleAtFixedRate(this::doWatchDog, 30, 3, TimeUnit.SECONDS);
+        scheduledExecutorService.scheduleAtFixedRate(this::doWatchDog, 30, 30, TimeUnit.SECONDS);
         log.info("DefaultRegisterWatchDog started");
     }
 
