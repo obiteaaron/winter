@@ -8,6 +8,7 @@ import tech.obiteaaron.winter.common.tools.system.SystemStatus;
 import tech.obiteaaron.winter.common.tools.threadpool.MutableThreadPoolExecutorFactory;
 import tech.obiteaaron.winter.embed.schedulercenter.JobContext;
 import tech.obiteaaron.winter.embed.schedulercenter.JobProcessor;
+import tech.obiteaaron.winter.embed.schedulercenter.WinterSchedulerCenter;
 import tech.obiteaaron.winter.embed.schedulercenter.executor.BeanParser;
 import tech.obiteaaron.winter.embed.schedulercenter.model.WinterJob;
 import tech.obiteaaron.winter.embed.schedulercenter.model.WinterJobInstance;
@@ -17,17 +18,20 @@ import tech.obiteaaron.winter.embed.schedulercenter.repository.WinterJobInstance
 import tech.obiteaaron.winter.embed.schedulercenter.repository.WinterJobInstanceTaskRepository;
 import tech.obiteaaron.winter.embed.schedulercenter.repository.WinterJobRepository;
 import tech.obiteaaron.winter.embed.schedulercenter.repository.request.WinterJobQuery;
-import tech.obiteaaron.winter.embed.schedulercenter.strategy.TimeStrategy;
+import tech.obiteaaron.winter.embed.schedulercenter.timing.TimeStrategy;
 
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * 调度器
+ */
 @Slf4j
-public class WinterSchedulerExecutor {
+public class WinterSchedulerDispatcher {
 
-    private final ExecutorService SCHEDULER_POOL = MutableThreadPoolExecutorFactory.newCallerRunPool("WinterSchedulerCenter#Scheduler#" + this.hashCode(), () -> 16, 0);
+    private final ExecutorService SCHEDULER_POOL = MutableThreadPoolExecutorFactory.newCallerRunPool("WinterSchedulerCenter#Scheduler#" + this.hashCode(), () -> 2, 0);
 
     @Setter
     private WinterJobRepository winterJobRepository;
@@ -41,11 +45,14 @@ public class WinterSchedulerExecutor {
     @Setter
     private BeanParser beanParser;
 
+    @Setter
+    private WinterSchedulerCenter winterSchedulerCenter;
+
     private final TimestampGenerator timestampGenerator = new TimestampGenerator();
     /**
      * 后台调度任务的执行周期，也就是最小间隔周期，周期执行任务的时间间隔最小也不会小于这个时间。
      */
-    private int schedulerIntervalSecond = 10;
+    private int schedulerIntervalSecond = 1;
 
     public void start() {
         SCHEDULER_POOL.submit(() -> {
@@ -94,8 +101,11 @@ public class WinterSchedulerExecutor {
                 jobContext.setJobId(winterJobInstance.getJobId());
                 jobContext.setInstanceId(winterJobInstance.getId());
                 jobContext.setManualParams(manualParams);
+                if (winterJobInstance.getJobProcessor() == null) {
+                    winterJobInstance.setJobProcessor(jobProcessor);
+                }
 
-                jobProcessor.process(jobContext);
+                winterSchedulerCenter.getWinterSchedulerExecutor().run(winterJob, winterJobInstance, jobContext);
             });
 
         } catch (Throwable t) {

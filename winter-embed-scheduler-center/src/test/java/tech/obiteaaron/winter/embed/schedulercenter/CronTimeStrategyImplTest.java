@@ -6,7 +6,7 @@ import org.junit.Test;
 import tech.obiteaaron.winter.common.tools.json.JsonUtil;
 import tech.obiteaaron.winter.embed.schedulercenter.model.TimeTypeEnum;
 import tech.obiteaaron.winter.embed.schedulercenter.model.WinterJob;
-import tech.obiteaaron.winter.embed.schedulercenter.strategy.CronTimeStrategyImpl;
+import tech.obiteaaron.winter.embed.schedulercenter.timing.strategy.CronTimeStrategyImpl;
 
 import java.util.Date;
 

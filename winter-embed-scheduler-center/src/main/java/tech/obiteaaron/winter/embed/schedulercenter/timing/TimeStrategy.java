@@ -1,9 +1,12 @@
-package tech.obiteaaron.winter.embed.schedulercenter.strategy;
+package tech.obiteaaron.winter.embed.schedulercenter.timing;
 
 import org.apache.commons.lang3.StringUtils;
 import tech.obiteaaron.winter.embed.schedulercenter.JobProcessor;
 import tech.obiteaaron.winter.embed.schedulercenter.model.TimeTypeEnum;
 import tech.obiteaaron.winter.embed.schedulercenter.model.WinterJob;
+import tech.obiteaaron.winter.embed.schedulercenter.timing.strategy.CronTimeStrategyImpl;
+import tech.obiteaaron.winter.embed.schedulercenter.timing.strategy.FixedDelayTimeStrategyImpl;
+import tech.obiteaaron.winter.embed.schedulercenter.timing.strategy.FixedRateTimeStrategyImpl;
 
 import java.util.Date;
 import java.util.Objects;

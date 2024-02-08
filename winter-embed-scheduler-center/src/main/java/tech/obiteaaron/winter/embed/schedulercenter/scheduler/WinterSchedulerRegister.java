@@ -12,7 +12,7 @@ import tech.obiteaaron.winter.embed.schedulercenter.model.TimeTypeEnum;
 import tech.obiteaaron.winter.embed.schedulercenter.model.WinterJob;
 import tech.obiteaaron.winter.embed.schedulercenter.model.WinterJonStatusEnum;
 import tech.obiteaaron.winter.embed.schedulercenter.repository.WinterJobRepository;
-import tech.obiteaaron.winter.embed.schedulercenter.strategy.TimeStrategy;
+import tech.obiteaaron.winter.embed.schedulercenter.timing.TimeStrategy;
 
 import java.util.Date;
 import java.util.Objects;
@@ -21,6 +21,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * 注册器
+ */
 @Slf4j
 public class WinterSchedulerRegister {
 
@@ -30,6 +33,9 @@ public class WinterSchedulerRegister {
 
     @Setter
     private WinterJobRepository winterJobRepository;
+
+    @Setter
+    private WinterSchedulerCenter winterSchedulerCenter;
 
     private final TimestampGenerator timestampGenerator = new TimestampGenerator();
 
@@ -135,6 +141,7 @@ public class WinterSchedulerRegister {
             if (!save) {
                 log.warn("register job failed winterJob = {}", JsonUtil.toJsonString(winterJob));
             }
+            // TODO 如果是Map类任务，需要将实现的类注册到RPC中，在Map时分发子任务到可用的机器上
         } catch (Throwable t) {
             log.error("register job exception winterJob = {}", JsonUtil.toJsonString(winterJob), t);
         }

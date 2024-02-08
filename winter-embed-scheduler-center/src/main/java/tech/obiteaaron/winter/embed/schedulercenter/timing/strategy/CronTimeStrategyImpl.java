@@ -1,4 +1,4 @@
-package tech.obiteaaron.winter.embed.schedulercenter.strategy;
+package tech.obiteaaron.winter.embed.schedulercenter.timing.strategy;
 
 import com.cronutils.model.Cron;
 import com.cronutils.model.CronType;
@@ -12,6 +12,7 @@ import tech.obiteaaron.winter.common.tools.json.JsonUtil;
 import tech.obiteaaron.winter.embed.schedulercenter.JobProcessor;
 import tech.obiteaaron.winter.embed.schedulercenter.WinterScheduled;
 import tech.obiteaaron.winter.embed.schedulercenter.model.WinterJob;
+import tech.obiteaaron.winter.embed.schedulercenter.timing.TimeStrategy;
 
 import java.time.Instant;
 import java.time.ZoneId;
