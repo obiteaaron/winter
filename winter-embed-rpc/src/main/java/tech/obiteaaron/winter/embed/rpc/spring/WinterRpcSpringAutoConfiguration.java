@@ -3,6 +3,7 @@ package tech.obiteaaron.winter.embed.rpc.spring;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -39,11 +40,12 @@ import java.util.function.Supplier;
 
 @EnableConfigurationProperties(WinterRpcProperties.class)
 @Configuration
+@ConditionalOnProperty(value = "tech.obiteaaron.winter.embed.rpc.enable", havingValue = "true", matchIfMissing = true)
 public class WinterRpcSpringAutoConfiguration implements SmartApplicationListener, ApplicationContextAware {
 
     ApplicationContext applicationContext;
 
-    private final AtomicBoolean atomicBoolean = new AtomicBoolean();
+    private final AtomicBoolean initialized = new AtomicBoolean();
 
     private WinterRpcBootstrap winterRpcBootstrap;
 
@@ -62,65 +64,66 @@ public class WinterRpcSpringAutoConfiguration implements SmartApplicationListene
 
     @Override
     public void onApplicationEvent(ApplicationEvent event) {
-        if (atomicBoolean.compareAndSet(false, true)) {
-            // 延迟赋值
-            WinterRpcProperties winterRpcProperties = applicationContext.getBean(WinterRpcProperties.class);
-
-            // 这里的Bean，可以从Spring里面获取，如果有，则直接使用，否则new一个
-            RegisterService registerService = applicationContext.getBean(RegisterService.class);
-            // 扩展支持自定义RegisterManager
-            RegisterManager registerManager = getBeanPrimary(RegisterManager.class, RegisterManagerImpl::new);
-            registerManager.setRegisterService(registerService);
-            // 扩展支持自定义ConsumerDispatcher
-            HttpServer httpServer = getBeanPrimary(HttpServer.class, VertxHttpServerImpl::new);
-            // 扩展支持自定义ConsumerDispatcher
-            ConsumerDispatcher consumerDispatcher = getBeanPrimary(ConsumerDispatcher.class, () -> {
-                ConsumerDispatcherImpl bean = new ConsumerDispatcherImpl();
-                int consumerThreadPoolSize = winterRpcProperties.getConsumerThreadPoolSize();
-                if (consumerThreadPoolSize > 0) {
-                    CommonOkHttpClient commonOkHttpClient = new CommonOkHttpClient(OkHttpClientFactory.create(0,
-                            winterRpcProperties.getConsumerTimeoutMilliSecond(),
-                            consumerThreadPoolSize,
-                            consumerThreadPoolSize,
-                            false, true, null
-                    ));
-                    bean.setCommonOkHttpClient(commonOkHttpClient);
-                } else {
-                    consumerThreadPoolSize = 1;
-                    CommonOkHttpClient commonOkHttpClient = new CommonOkHttpClient(OkHttpClientFactory.create(0,
-                            winterRpcProperties.getConsumerTimeoutMilliSecond(),
-                            consumerThreadPoolSize,
-                            consumerThreadPoolSize,
-                            false, false, null
-                    ));
-                    bean.setCommonOkHttpClient(commonOkHttpClient);
-                }
-                return bean;
-            });
-            // 扩展支持自定义ProviderDispatcher
-            ProviderDispatcher providerDispatcher = getBeanPrimary(ProviderDispatcherImpl.class, ProviderDispatcherImpl::new);
-            // 扩展支持自定义ProviderRouter
-            ProviderRouter providerRouter = getBeanPrimary(ProviderRouter.class, RoundRobinProviderRouterImpl::new);
-
-            // 扩展支持自定义RpcFilter
-            Map<String, RpcFilter> rpcFilterMap = applicationContext.getBeansOfType(RpcFilter.class);
-            // 将Spring的配置复制到实例配置里面
-            WinterRpcConfig winterRpcConfig = new WinterRpcConfig();
-            BeanUtils.copyProperties(winterRpcProperties, winterRpcConfig);
-            winterRpcBootstrap.setHttpServer(httpServer)
-                    .setWinterRpcConfig(winterRpcConfig)
-                    .setRegisterManager(registerManager)
-                    .setProviderDispatcher(providerDispatcher)
-                    .setConsumerDispatcher(consumerDispatcher)
-                    .setProviderWatchDog(new ProviderWatchDog())
-                    .addProviderRouter(providerRouter)
-                    .setRpcFilters(new ArrayList<>(rpcFilterMap.values()))
-                    .addRpcFilter(new LoggingRpcFilter())
-                    .addRpcFilter(new TracingRpcFilter())
-                    .addRpcFilter(new MonitorRpcFilter());
-            // 启动
-            winterRpcBootstrap.start();
+        if (!initialized.compareAndSet(false, true)) {
+            return;
         }
+        // 延迟赋值
+        WinterRpcProperties winterRpcProperties = applicationContext.getBean(WinterRpcProperties.class);
+
+        // 这里的Bean，可以从Spring里面获取，如果有，则直接使用，否则new一个
+        RegisterService registerService = applicationContext.getBean(RegisterService.class);
+        // 扩展支持自定义RegisterManager
+        RegisterManager registerManager = getBeanPrimary(RegisterManager.class, RegisterManagerImpl::new);
+        registerManager.setRegisterService(registerService);
+        // 扩展支持自定义ConsumerDispatcher
+        HttpServer httpServer = getBeanPrimary(HttpServer.class, VertxHttpServerImpl::new);
+        // 扩展支持自定义ConsumerDispatcher
+        ConsumerDispatcher consumerDispatcher = getBeanPrimary(ConsumerDispatcher.class, () -> {
+            ConsumerDispatcherImpl bean = new ConsumerDispatcherImpl();
+            int consumerThreadPoolSize = winterRpcProperties.getConsumerThreadPoolSize();
+            if (consumerThreadPoolSize > 0) {
+                CommonOkHttpClient commonOkHttpClient = new CommonOkHttpClient(OkHttpClientFactory.create(0,
+                        winterRpcProperties.getConsumerTimeoutMilliSecond(),
+                        consumerThreadPoolSize,
+                        consumerThreadPoolSize,
+                        false, true, null
+                ));
+                bean.setCommonOkHttpClient(commonOkHttpClient);
+            } else {
+                consumerThreadPoolSize = 1;
+                CommonOkHttpClient commonOkHttpClient = new CommonOkHttpClient(OkHttpClientFactory.create(0,
+                        winterRpcProperties.getConsumerTimeoutMilliSecond(),
+                        consumerThreadPoolSize,
+                        consumerThreadPoolSize,
+                        false, false, null
+                ));
+                bean.setCommonOkHttpClient(commonOkHttpClient);
+            }
+            return bean;
+        });
+        // 扩展支持自定义ProviderDispatcher
+        ProviderDispatcher providerDispatcher = getBeanPrimary(ProviderDispatcherImpl.class, ProviderDispatcherImpl::new);
+        // 扩展支持自定义ProviderRouter
+        ProviderRouter providerRouter = getBeanPrimary(ProviderRouter.class, RoundRobinProviderRouterImpl::new);
+
+        // 扩展支持自定义RpcFilter
+        Map<String, RpcFilter> rpcFilterMap = applicationContext.getBeansOfType(RpcFilter.class);
+        // 将Spring的配置复制到实例配置里面
+        WinterRpcConfig winterRpcConfig = new WinterRpcConfig();
+        BeanUtils.copyProperties(winterRpcProperties, winterRpcConfig);
+        winterRpcBootstrap.setHttpServer(httpServer)
+                .setWinterRpcConfig(winterRpcConfig)
+                .setRegisterManager(registerManager)
+                .setProviderDispatcher(providerDispatcher)
+                .setConsumerDispatcher(consumerDispatcher)
+                .setProviderWatchDog(new ProviderWatchDog())
+                .addProviderRouter(providerRouter)
+                .setRpcFilters(new ArrayList<>(rpcFilterMap.values()))
+                .addRpcFilter(new LoggingRpcFilter())
+                .addRpcFilter(new TracingRpcFilter())
+                .addRpcFilter(new MonitorRpcFilter());
+        // 启动
+        winterRpcBootstrap.start();
     }
 
     private <T> T getBeanPrimary(Class<T> clazz, Supplier<T> supplier) {
