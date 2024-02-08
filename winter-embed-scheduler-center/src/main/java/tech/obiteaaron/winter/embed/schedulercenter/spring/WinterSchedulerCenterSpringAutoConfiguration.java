@@ -2,6 +2,7 @@ package tech.obiteaaron.winter.embed.schedulercenter.spring;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -24,6 +25,7 @@ import java.util.function.Supplier;
 
 @EnableConfigurationProperties(WinterSchedulerCenterProperties.class)
 @Configuration
+@ConditionalOnProperty(value = "tech.obiteaaron.winter.embed.schedulercenter.enable", havingValue = "true", matchIfMissing = true)
 public class WinterSchedulerCenterSpringAutoConfiguration implements SmartApplicationListener, ApplicationContextAware {
 
     ApplicationContext applicationContext;

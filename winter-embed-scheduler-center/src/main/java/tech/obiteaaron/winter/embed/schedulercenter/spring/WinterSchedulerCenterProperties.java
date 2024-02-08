@@ -8,6 +8,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Getter
 @Setter
 public class WinterSchedulerCenterProperties {
+
+    private boolean enable = true;
     /**
      * 执行任务线程池大小
      */
