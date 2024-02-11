@@ -1,5 +1,7 @@
 package tech.obiteaaron.winter.embed.schedulercenter.executor;
 
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import tech.obiteaaron.winter.common.tools.lock.Lock;
 import tech.obiteaaron.winter.common.tools.lock.Locks;
@@ -16,8 +18,15 @@ import java.util.concurrent.ExecutorService;
  */
 @Slf4j
 public class WinterSchedulerExecutor {
+    /**
+     * 工作线程池大小
+     */
+    @Setter
+    @Getter
+    private int poolSize = 256;
 
-    private final ExecutorService EXECUTOR_POOL = MutableThreadPoolExecutorFactory.newCallerRunPool("WinterSchedulerCenter#Executor#" + this.hashCode(), () -> 256, 0);
+    private final ExecutorService EXECUTOR_POOL = MutableThreadPoolExecutorFactory.newCallerRunPool("WinterSchedulerCenter#Executor#" + this.hashCode(), () -> poolSize, 0);
+
 
     public void run(WinterJob winterJob, WinterJobInstance winterJobInstance, JobContext jobContext) {
         EXECUTOR_POOL.submit(() -> {

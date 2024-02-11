@@ -14,6 +14,7 @@ import tech.obiteaaron.winter.embed.schedulercenter.scheduler.WinterSchedulerDis
 import tech.obiteaaron.winter.embed.schedulercenter.scheduler.WinterSchedulerRegister;
 
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
@@ -25,6 +26,8 @@ public final class WinterSchedulerCenter {
 
     private static final AtomicBoolean initialized = new AtomicBoolean();
 
+    private WinterSchedulerCenterConfig winterSchedulerCenterConfig = new WinterSchedulerCenterConfig();
+
     private WinterJobRepository winterJobRepository = new WinterJobMemoryRepositoryImpl();
 
     private WinterJobInstanceRepository winterJobInstanceRepository;
@@ -33,6 +36,7 @@ public final class WinterSchedulerCenter {
     /**
      * 基于RPC的实例提供集群内的多机分发功能，以实现Map、MapReduce任务功能
      */
+    @Getter
     private WinterRpcBootstrap winterRpcBootstrap;
 
     private BeanParser beanParser;
@@ -65,6 +69,23 @@ public final class WinterSchedulerCenter {
         if (!initialized.compareAndSet(false, true)) {
             return;
         }
+        int delayStartMillisecond = winterSchedulerCenterConfig.getDelayStartMillisecond();
+        if (delayStartMillisecond > 0) {
+            // 延迟启动
+            new Thread(() -> {
+                try {
+                    TimeUnit.MILLISECONDS.sleep(delayStartMillisecond);
+                } catch (InterruptedException ignore) {
+                }
+                realStart();
+            }).start();
+        } else {
+            // 不延迟启动
+            realStart();
+        }
+    }
+
+    private void realStart() {
         // 启动注册服务
         winterSchedulerRegister.setWinterJobRepository(Objects.requireNonNull(winterJobRepository, "winterJobRepository cannot be null"));
         winterSchedulerRegister.start();
@@ -75,8 +96,17 @@ public final class WinterSchedulerCenter {
         winterSchedulerDispatcher.setBeanParser(Objects.requireNonNull(beanParser, "beanParser cannot be null"));
         winterSchedulerDispatcher.setWinterSchedulerCenter(this);
         winterSchedulerDispatcher.start();
+        // 配置工作线程池大小
+        winterSchedulerExecutor.setPoolSize(winterSchedulerCenterConfig.getThreadPoolSize());
         // TODO 初始化RPC独享实例，用Map、MapReduce任务
+        if (winterSchedulerCenterConfig.isEnableMapJobClusterRpc()) {
 //        winterRpcBootstrap.start();
+        }
+    }
+
+    public WinterSchedulerCenter setWinterSchedulerCenterConfig(WinterSchedulerCenterConfig winterSchedulerCenterConfig) {
+        this.winterSchedulerCenterConfig = winterSchedulerCenterConfig;
+        return this;
     }
 
     public WinterSchedulerCenter setWinterJobRepository(WinterJobRepository winterJobRepository) {

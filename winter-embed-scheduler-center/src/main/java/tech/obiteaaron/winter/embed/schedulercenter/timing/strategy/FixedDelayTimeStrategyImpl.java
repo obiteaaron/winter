@@ -35,6 +35,11 @@ public class FixedDelayTimeStrategyImpl implements TimeStrategy {
         Map map = JsonUtil.parseObject(timeExpression, Map.class);
         Integer fixedDelay = (Integer) map.get("fixedDelay");
         Date baseTime = ObjectUtils.firstNonNull(winterJob.getNextTriggerTime(), now);
-        return new Date(baseTime.getTime() + fixedDelay);
+        Date nextTriggerTime = new Date(baseTime.getTime() + fixedDelay);
+        // 如果计算结果早于当前时间则立即返回执行一次
+        if (nextTriggerTime.before(now)) {
+            return now;
+        }
+        return nextTriggerTime;
     }
 }

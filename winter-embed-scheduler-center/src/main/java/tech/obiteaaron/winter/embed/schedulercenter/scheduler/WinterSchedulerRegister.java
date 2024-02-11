@@ -7,6 +7,8 @@ import tech.obiteaaron.winter.common.tools.id.TimestampGenerator;
 import tech.obiteaaron.winter.common.tools.json.JsonUtil;
 import tech.obiteaaron.winter.common.tools.system.SystemStatus;
 import tech.obiteaaron.winter.common.tools.threadpool.ThreadUtil;
+import tech.obiteaaron.winter.embed.rpc.WinterRpcBootstrap;
+import tech.obiteaaron.winter.embed.rpc.regesiter.ProviderConfig;
 import tech.obiteaaron.winter.embed.schedulercenter.*;
 import tech.obiteaaron.winter.embed.schedulercenter.model.TimeTypeEnum;
 import tech.obiteaaron.winter.embed.schedulercenter.model.WinterJob;
@@ -141,9 +143,31 @@ public class WinterSchedulerRegister {
             if (!save) {
                 log.warn("register job failed winterJob = {}", JsonUtil.toJsonString(winterJob));
             }
-            // TODO 如果是Map类任务，需要将实现的类注册到RPC中，在Map时分发子任务到可用的机器上
+            // 如果是Map类任务，需要将实现的类注册到RPC中，在Map时分发子任务到可用的机器上
+            if (winterJob.getJobProcessor() instanceof MapJobProcessor) {
+                registerMapJobProcessorTaskCall(winterJob);
+            }
         } catch (Throwable t) {
             log.error("register job exception winterJob = {}", JsonUtil.toJsonString(winterJob), t);
         }
+    }
+
+    private void registerMapJobProcessorTaskCall(WinterJob winterJob) throws NoSuchMethodException {
+        JobProcessor jobProcessor = winterJob.getJobProcessor();
+        if (!(jobProcessor instanceof MapJobProcessor)) {
+            return;
+        }
+        Class<? extends JobProcessor> jobProcessorClass = jobProcessor.getClass();
+        WinterRpcBootstrap winterRpcBootstrap = WinterSchedulerCenter.INSTANCE.getWinterRpcBootstrap();
+        // register到RPC里面
+        ProviderConfig providerConfig = ProviderConfig.builder()
+                .interfaceClass(jobProcessorClass)
+                .interfaceName(jobProcessorClass.getName())
+                .interfaceImpl(jobProcessor)
+                .version("1.0.0")
+                .group("WinterScheduler")
+                .tags(null)
+                .build();
+        winterRpcBootstrap.addProviderConfig(providerConfig);
     }
 }

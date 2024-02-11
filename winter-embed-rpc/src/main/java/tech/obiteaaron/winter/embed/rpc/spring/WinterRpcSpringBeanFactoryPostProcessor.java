@@ -80,19 +80,21 @@ public class WinterRpcSpringBeanFactoryPostProcessor implements BeanFactoryPostP
         if (annotation == null) {
             return;
         }
-        String beanName = generateConsumerBeanName(aClass);
-        ConsumerInvocationHandler consumerInvocationHandler = new ConsumerInvocationHandler(annotation, winterRpcBootstrap);
-        Object proxyBean = Proxy.newProxyInstance(aClass.getClassLoader(), new Class[]{aClass}, consumerInvocationHandler);
-        beanFactory.registerSingleton(beanName, proxyBean);
-        consumerProxyBeanMap.put(aClass, proxyBean);
-        log.info("registerConsumerBean success className = {}", beanName);
         // 订阅到注册中心
         ConsumerConfig consumerConfig = ConsumerConfig.builder()
                 .interfaceClass(aClass)
                 .interfaceName(aClass.getName())
                 .version(annotation.version())
                 .group(annotation.group())
+                .tags(annotation.tags())
                 .build();
+
+        String beanName = generateConsumerBeanName(aClass);
+        ConsumerInvocationHandler consumerInvocationHandler = new ConsumerInvocationHandler(consumerConfig, winterRpcBootstrap);
+        Object proxyBean = Proxy.newProxyInstance(aClass.getClassLoader(), new Class[]{aClass}, consumerInvocationHandler);
+        beanFactory.registerSingleton(beanName, proxyBean);
+        consumerProxyBeanMap.put(aClass, proxyBean);
+        log.info("registerConsumerBean success className = {}", beanName);
         winterRpcBootstrap.addConsumerConfig(consumerConfig);
     }
 

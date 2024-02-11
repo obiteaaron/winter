@@ -6,7 +6,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * 常驻任务处理器
- * 执行一次后不退出，直到达成退出条件
+ * 执行一次后不退出，直到达成退出条件。比普通任务的优势是，可以通过{@link #sleepMillisecond()}动态调整暂停的时间，而不是被定时器限制死了。但也会带来一定的编程复杂性。
  */
 public interface LongTimeJobProcessor extends JobProcessor {
 
@@ -20,8 +20,7 @@ public interface LongTimeJobProcessor extends JobProcessor {
             } finally {
                 afterRunOnce(jobContext);
             }
-            sleepOnce(jobContext);
-        } while (isLongTimeRunning(jobContext));
+        } while (isLongTimeRunning(jobContext) && sleepOnce(jobContext));
     }
 
     default void beforeRunOnce(JobContext jobContext) {
@@ -38,21 +37,21 @@ public interface LongTimeJobProcessor extends JobProcessor {
 
     }
 
-    default void sleepOnce(JobContext jobContext) {
+    default boolean sleepOnce(JobContext jobContext) {
         long startTime = System.currentTimeMillis();
         try {
             while (true) {
                 long millisecond = sleepMillisecond();
                 if (millisecond <= 1000) {
                     TimeUnit.MILLISECONDS.sleep(millisecond);
-                    return;
+                    return true;
                 } else {
                     long endTime = startTime + millisecond;
                     if (endTime > System.currentTimeMillis()) {
                         // 1秒后再尝试，方便外部唤醒
                         TimeUnit.MILLISECONDS.sleep(Math.min(endTime - System.currentTimeMillis(), 1000));
                     } else {
-                        return;
+                        return true;
                     }
                 }
             }

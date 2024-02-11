@@ -57,8 +57,8 @@ public class DefaultRegisterWatchDog {
     }
 
     private void doWatchDog0() {
-        // 心跳3秒内的算有效
-        long validProviderTime = System.currentTimeMillis() - 3000;
+        // 超过30秒没心跳的才删除，避免网络延迟导致心跳没上报上来
+        long validProviderTime = System.currentTimeMillis() - 30_000;
         // 直接从本地查，本地拥有全量数据
         List<Config> allConfigs = ConfigCenter.getAllConfigs();
         List<Config> invalidUrls = allConfigs.stream()

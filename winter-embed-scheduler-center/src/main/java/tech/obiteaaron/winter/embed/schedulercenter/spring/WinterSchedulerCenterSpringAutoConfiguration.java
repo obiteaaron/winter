@@ -1,5 +1,6 @@
 package tech.obiteaaron.winter.embed.schedulercenter.spring;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -11,7 +12,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.SmartApplicationListener;
+import tech.obiteaaron.winter.embed.rpc.WinterRpcBootstrap;
 import tech.obiteaaron.winter.embed.schedulercenter.WinterSchedulerCenter;
+import tech.obiteaaron.winter.embed.schedulercenter.WinterSchedulerCenterConfig;
 import tech.obiteaaron.winter.embed.schedulercenter.executor.SpringBeanParserImpl;
 import tech.obiteaaron.winter.embed.schedulercenter.repository.WinterJobInstanceRepository;
 import tech.obiteaaron.winter.embed.schedulercenter.repository.WinterJobInstanceTaskRepository;
@@ -49,13 +52,23 @@ public class WinterSchedulerCenterSpringAutoConfiguration implements SmartApplic
             WinterJobInstanceRepository winterJobInstanceRepository = getBeanPrimary(WinterJobInstanceRepository.class, WinterJobInstanceMemoryRepositoryImpl::new);
             WinterJobInstanceTaskRepository winterJobInstanceTaskRepository = getBeanPrimary(WinterJobInstanceTaskRepository.class, WinterJobInstanceTaskMemoryRepositoryImpl::new);
 
-            // 启动调度中心后台任务
+
+            WinterSchedulerCenterProperties winterSchedulerCenterProperties = getBeanPrimary(WinterSchedulerCenterProperties.class, WinterSchedulerCenterProperties::new);
+            WinterSchedulerCenterConfig winterSchedulerCenterConfig = new WinterSchedulerCenterConfig();
+            BeanUtils.copyProperties(winterSchedulerCenterProperties, winterSchedulerCenterConfig);
+
             WinterSchedulerCenter.INSTANCE
+                    .setWinterSchedulerCenterConfig(winterSchedulerCenterConfig)
                     .setWinterJobRepository(winterJobRepository)
                     .setWinterJobInstanceRepository(winterJobInstanceRepository)
                     .setWinterJobInstanceTaskRepository(winterJobInstanceTaskRepository)
-                    .setBeanParser(new SpringBeanParserImpl())
-                    .start();
+                    .setBeanParser(new SpringBeanParserImpl());
+            if (winterSchedulerCenterProperties.isEnableMapJobClusterRpc() && winterSchedulerCenterProperties.isUseDefaultWinterRpcBootstrap()) {
+                WinterRpcBootstrap winterRpcBootstrap = WinterRpcBootstrap.INSTANCE_MAP.get("default");
+                WinterSchedulerCenter.INSTANCE.setWinterRpcBootstrap(winterRpcBootstrap);
+            }
+            // 启动调度中心后台任务
+            WinterSchedulerCenter.INSTANCE.start();
         }
     }
 

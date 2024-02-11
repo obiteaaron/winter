@@ -8,7 +8,6 @@ import org.jetbrains.annotations.NotNull;
 import tech.obiteaaron.winter.common.tools.http.CommonOkHttpClient;
 import tech.obiteaaron.winter.common.tools.trace.Slf4jMdcUtil;
 import tech.obiteaaron.winter.embed.registercenter.model.URL;
-import tech.obiteaaron.winter.embed.rpc.WinterConsumer;
 import tech.obiteaaron.winter.embed.rpc.WinterRpcBootstrap;
 import tech.obiteaaron.winter.embed.rpc.constant.InvokerStage;
 import tech.obiteaaron.winter.embed.rpc.constant.MethodUtil;
@@ -33,19 +32,11 @@ public class ConsumerDispatcherImpl implements ConsumerDispatcher {
     WinterRpcBootstrap winterRpcBootstrap;
 
     @Override
-    public Object dispatch(Object proxy, Method method, Object[] args, WinterConsumer annotation) {
-        String interfaceName = method.getDeclaringClass().getName();
-        ConsumerConfig consumerConfig = ConsumerConfig.builder()
-                .interfaceName(interfaceName)
-                .group(annotation.group())
-                .version(annotation.version())
-                .tags(annotation.tags())
-                .build();
-
+    public Object dispatch(Object proxy, Method method, Object[] args, ConsumerConfig consumerConfig) {
         // 查提供者
         List<URL> providerList = winterRpcBootstrap.getRegisterManager().lookup(consumerConfig);
         // 路由策略、有效性校验等等路由规则
-        URL providerUrl = resolveRouterUrl(annotation, providerList, consumerConfig, interfaceName);
+        URL providerUrl = resolveRouterUrl(consumerConfig, providerList);
 
         // 构造 InvokeContext
         InvokeContext invokeContext = new InvokeContext();
@@ -80,7 +71,7 @@ public class ConsumerDispatcherImpl implements ConsumerDispatcher {
      * 决策路由
      */
     @NotNull
-    private URL resolveRouterUrl(WinterConsumer annotation, List<URL> providerList, ConsumerConfig consumerConfig, String interfaceName) {
+    private URL resolveRouterUrl(ConsumerConfig consumerConfig, List<URL> providerList) {
         List<URL> providerListResolve = providerList;
         List<ProviderRouter> providerRouters = winterRpcBootstrap.getProviderRouters();
         if (!CollectionUtils.isEmpty(providerRouters)) {
@@ -89,7 +80,7 @@ public class ConsumerDispatcherImpl implements ConsumerDispatcher {
             }
         }
         if (CollectionUtils.isEmpty(providerListResolve)) {
-            throw new RuntimeException("NoProvider " + interfaceName + ":" + annotation.version() + ":" + annotation.group());
+            throw new RuntimeException("NoProvider " + consumerConfig.getInterfaceName() + ":" + consumerConfig.getVersion() + ":" + consumerConfig.getGroup());
         }
         return providerListResolve.get(0);
     }

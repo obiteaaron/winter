@@ -104,6 +104,7 @@ public class WinterSchedulerDispatcher {
                 if (winterJobInstance.getJobProcessor() == null) {
                     winterJobInstance.setJobProcessor(jobProcessor);
                 }
+                jobContext.setTaskType(JobContext.TaskTypeEnum.NORMAL.name());
 
                 winterSchedulerCenter.getWinterSchedulerExecutor().run(winterJob, winterJobInstance, jobContext);
             });

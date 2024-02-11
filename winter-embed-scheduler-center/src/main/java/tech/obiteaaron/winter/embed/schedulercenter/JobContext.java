@@ -21,6 +21,16 @@ public class JobContext {
     /**
      * NORMAL 正常任务
      * MAP_SUB_TASK MAP子任务
+     *
+     * @see TaskTypeEnum
      */
     private String taskType;
+
+    public boolean isMapSubTask() {
+        return TaskTypeEnum.MAP_SUB_TASK.name().equals(taskType);
+    }
+
+    public enum TaskTypeEnum {
+        NORMAL, MAP_SUB_TASK
+    }
 }
