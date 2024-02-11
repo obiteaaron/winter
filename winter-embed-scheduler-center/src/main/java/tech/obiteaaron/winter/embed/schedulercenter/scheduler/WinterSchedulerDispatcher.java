@@ -96,14 +96,14 @@ public class WinterSchedulerDispatcher {
             Date nextTriggerTime = winterJob.getNextTriggerTime();
             InstanceTimeWheelService.schedule(winterJobInstance.getId(), nextTriggerTime.getTime() - System.currentTimeMillis(), () -> {
                 JobProcessor jobProcessor = beanParser.parse(winterJob);
+                if (winterJobInstance.getJobProcessor() == null) {
+                    winterJobInstance.setJobProcessor(jobProcessor);
+                }
 
                 JobContext jobContext = new JobContext();
                 jobContext.setJobId(winterJobInstance.getJobId());
                 jobContext.setInstanceId(winterJobInstance.getId());
                 jobContext.setManualParams(manualParams);
-                if (winterJobInstance.getJobProcessor() == null) {
-                    winterJobInstance.setJobProcessor(jobProcessor);
-                }
                 jobContext.setTaskType(JobContext.TaskTypeEnum.NORMAL.name());
 
                 winterSchedulerCenter.getWinterSchedulerExecutor().run(winterJob, winterJobInstance, jobContext);

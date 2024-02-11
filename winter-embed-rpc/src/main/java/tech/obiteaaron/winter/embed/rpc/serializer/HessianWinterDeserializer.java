@@ -2,6 +2,7 @@ package tech.obiteaaron.winter.embed.rpc.serializer;
 
 import com.caucho.hessian.io.HessianInput;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.Base64Utils;
 
 import java.io.ByteArrayInputStream;
 
@@ -15,7 +16,8 @@ public class HessianWinterDeserializer implements WinterDeserializer {
     @Override
     public Object deserializer(String value, boolean isArray, String[] types, String[] invocationParameterTypes) {
         try {
-            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(value.getBytes());
+            byte[] bytes = Base64Utils.decodeFromString(value);
+            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
             HessianInput hessianInput = new HessianInput(byteArrayInputStream);
             hessianInput.setSerializerFactory(HessianWinterSerializer.HESSIAN_FACTORY.getSerializerFactory());
             Object o = hessianInput.readObject();

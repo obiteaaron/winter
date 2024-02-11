@@ -1,5 +1,8 @@
 package tech.obiteaaron.winter.embed.schedulercenter;
 
+import tech.obiteaaron.winter.embed.rpc.regesiter.ConsumerConfig;
+
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Objects;
 
@@ -28,6 +31,28 @@ public interface MapJobProcessor extends LongTimeJobProcessor {
      * @param taskInfoList 子任务列表，用字符串表示，可以自行拼装
      */
     default void map(JobContext jobContext, List<String> taskInfoList) {
+        Method processMethod = null;
+        try {
+            processMethod = this.getClass().getMethod("process", JobContext.class);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+        JobContext jobContextSub = new JobContext();
+        jobContextSub.setJobId(jobContext.getJobId());
+        jobContextSub.setInstanceId(jobContext.getInstanceId());
+        jobContextSub.setManualParams(jobContext.getManualParams());
+        // 把子任务的信息通过参数带过去
+        jobContextSub.setMapTaskList(taskInfoList);
+        jobContextSub.setTaskType(JobContext.TaskTypeEnum.MAP_SUB_TASK.name());
+
+        ConsumerConfig consumerConfig = ConsumerConfig.builder()
+                .interfaceName(this.getClass().getName())
+                .version("1.0.0")
+                .group("WinterScheduler")
+                .tags(null)
+                .build();
+        // Map在此处只管分发，不管结果，分发成功即可。如果需要结果，可以使用Reduce任务。
+        Object dispatchResult = WinterSchedulerCenter.INSTANCE.getWinterRpcBootstrap().getConsumerDispatcher().dispatch(null, processMethod, new Object[]{jobContextSub}, consumerConfig);
 
     }
 }

@@ -3,6 +3,8 @@ package tech.obiteaaron.winter.embed.schedulercenter;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 public class JobContext {
@@ -25,6 +27,10 @@ public class JobContext {
      * @see TaskTypeEnum
      */
     private String taskType;
+    /**
+     * MAP子任务的信息，JSON格式，{@link MapJobProcessor#map(JobContext, List)} 的第二个参数
+     */
+    private List<String> mapTaskList;
 
     public boolean isMapSubTask() {
         return TaskTypeEnum.MAP_SUB_TASK.name().equals(taskType);
