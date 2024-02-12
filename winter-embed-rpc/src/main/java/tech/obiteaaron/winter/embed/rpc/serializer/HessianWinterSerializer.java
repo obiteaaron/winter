@@ -3,7 +3,7 @@ package tech.obiteaaron.winter.embed.rpc.serializer;
 import com.caucho.hessian.io.HessianFactory;
 import com.caucho.hessian.io.HessianOutput;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.Base64Utils;
+import tech.obiteaaron.winter.common.tools.util.Base64Utils;
 
 import java.io.ByteArrayOutputStream;
 
