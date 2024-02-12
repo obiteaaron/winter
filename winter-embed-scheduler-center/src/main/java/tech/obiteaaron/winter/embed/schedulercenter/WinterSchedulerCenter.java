@@ -90,15 +90,22 @@ public final class WinterSchedulerCenter {
         // 启动注册服务
         winterSchedulerRegister.setWinterJobRepository(Objects.requireNonNull(winterJobRepository, "winterJobRepository cannot be null"));
         winterSchedulerRegister.start();
+        // 等待注册服务启动后，将Map类的服务提供者注册上去。
+        try {
+            TimeUnit.SECONDS.sleep(3);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         // 启动调度执行服务
         winterSchedulerDispatcher.setWinterJobRepository(Objects.requireNonNull(winterJobRepository, "winterJobRepository cannot be null"));
-        winterSchedulerDispatcher.setWinterJobInstanceRepository(winterJobInstanceRepository);
+        winterSchedulerDispatcher.setWinterJobInstanceRepository(Objects.requireNonNull(winterJobInstanceRepository, "winterJobInstanceRepository cannot be null"));
         winterSchedulerDispatcher.setWinterJobInstanceTaskRepository(winterJobInstanceTaskRepository);
         winterSchedulerDispatcher.setBeanParser(Objects.requireNonNull(beanParser, "beanParser cannot be null"));
         winterSchedulerDispatcher.setWinterSchedulerCenter(this);
         winterSchedulerDispatcher.start();
         // 配置工作线程池大小
         winterSchedulerExecutor.setPoolSize(winterSchedulerCenterConfig.getThreadPoolSize());
+        winterSchedulerExecutor.setWinterJobInstanceRepository(winterJobInstanceRepository);
         // TODO 初始化RPC独享实例，用Map、MapReduce任务
         if (winterSchedulerCenterConfig.isEnableMapJobClusterRpc()) {
 //        winterRpcBootstrap.start();

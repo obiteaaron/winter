@@ -24,6 +24,11 @@ public class WinterSchedulerCenterProperties {
     private boolean enableMapJobClusterRpc = true;
     /**
      * 是否使用默认的RPC实例，如果没有使用负载均衡服务器，通常都是可以共用的
+     * TODO 目前仅实现了共享实例，独享实例暂未实现
      */
     private boolean useDefaultWinterRpcBootstrap = true;
+    /**
+     * 存储类型：MEMORY、Mysql、JPA
+     */
+    private String repositoryType = "MEMORY";
 }

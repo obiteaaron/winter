@@ -19,10 +19,15 @@ import tech.obiteaaron.winter.embed.schedulercenter.executor.SpringBeanParserImp
 import tech.obiteaaron.winter.embed.schedulercenter.repository.WinterJobInstanceRepository;
 import tech.obiteaaron.winter.embed.schedulercenter.repository.WinterJobInstanceTaskRepository;
 import tech.obiteaaron.winter.embed.schedulercenter.repository.WinterJobRepository;
+import tech.obiteaaron.winter.embed.schedulercenter.repository.impl.jpa.WinterJobInstanceJpaRepositoryImpl;
+import tech.obiteaaron.winter.embed.schedulercenter.repository.impl.jpa.WinterJobJpaRepositoryImpl;
 import tech.obiteaaron.winter.embed.schedulercenter.repository.impl.memory.WinterJobInstanceMemoryRepositoryImpl;
 import tech.obiteaaron.winter.embed.schedulercenter.repository.impl.memory.WinterJobInstanceTaskMemoryRepositoryImpl;
 import tech.obiteaaron.winter.embed.schedulercenter.repository.impl.memory.WinterJobMemoryRepositoryImpl;
+import tech.obiteaaron.winter.embed.schedulercenter.repository.impl.mysql.WinterJobInstanceMysqlRepositoryImpl;
+import tech.obiteaaron.winter.embed.schedulercenter.repository.impl.mysql.WinterJobMysqlRepositoryImpl;
 
+import javax.sql.DataSource;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
@@ -87,7 +92,7 @@ public class WinterSchedulerCenterSpringAutoConfiguration implements SmartApplic
 
     @Override
     public int getOrder() {
-        return 0;
+        return 100;
     }
 
     @Override
@@ -95,4 +100,34 @@ public class WinterSchedulerCenterSpringAutoConfiguration implements SmartApplic
         this.applicationContext = applicationContext;
     }
 
+    @Configuration
+    @ConditionalOnProperty(value = "tech.obiteaaron.winter.embed.schedulercenter.repositoryType", havingValue = "JPA")
+    public static class JpaRepository {
+
+        @Bean
+        public WinterJobInstanceRepository winterJobInstanceRepository(DataSource dataSource) {
+            return new WinterJobInstanceJpaRepositoryImpl();
+        }
+
+        @Bean
+        public WinterJobRepository winterJobRepository(DataSource dataSource) {
+            return new WinterJobJpaRepositoryImpl();
+        }
+
+    }
+
+    @Configuration
+    @ConditionalOnProperty(value = "tech.obiteaaron.winter.embed.schedulercenter.repositoryType", havingValue = "MYSQL")
+    public static class MysqlRepository {
+
+        @Bean
+        public WinterJobInstanceRepository winterJobInstanceRepository(DataSource dataSource) {
+            return new WinterJobInstanceMysqlRepositoryImpl();
+        }
+
+        @Bean
+        public WinterJobRepository winterJobRepository(DataSource dataSource) {
+            return new WinterJobMysqlRepositoryImpl();
+        }
+    }
 }

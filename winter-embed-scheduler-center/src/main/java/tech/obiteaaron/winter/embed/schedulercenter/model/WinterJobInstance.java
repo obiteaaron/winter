@@ -15,7 +15,7 @@ public class WinterJobInstance {
     private Date gmtModified;
 
     private Long jobId;
-    private String name;
+    private String jobName;
     /**
      * 开始时间
      */

@@ -2,7 +2,7 @@ package tech.obiteaaron.winter.common.tools.trace;
 
 import tech.obiteaaron.winter.common.tools.id.UuidGenerator;
 
-public class TraceUtil {
+public class TraceUtils {
 
     private static final LocalTrace localTrace = new LocalTrace();
 

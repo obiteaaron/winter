@@ -3,10 +3,9 @@ package tech.obiteaaron.winter.embed.schedulercenter.scheduler;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import tech.obiteaaron.winter.common.tools.id.TimestampGenerator;
 import tech.obiteaaron.winter.common.tools.json.JsonUtil;
 import tech.obiteaaron.winter.common.tools.system.SystemStatus;
-import tech.obiteaaron.winter.common.tools.threadpool.ThreadUtil;
+import tech.obiteaaron.winter.common.tools.threadpool.ThreadUtils;
 import tech.obiteaaron.winter.embed.rpc.WinterRpcBootstrap;
 import tech.obiteaaron.winter.embed.rpc.regesiter.ProviderConfig;
 import tech.obiteaaron.winter.embed.schedulercenter.*;
@@ -39,8 +38,6 @@ public class WinterSchedulerRegister {
     @Setter
     private WinterSchedulerCenter winterSchedulerCenter;
 
-    private final TimestampGenerator timestampGenerator = new TimestampGenerator();
-
     public WinterJob addWinterJob(JobProcessor jobProcessor) {
         WinterJob winterJob = toWinterJob(jobProcessor);
         return addWinterJob(winterJob);
@@ -53,7 +50,7 @@ public class WinterSchedulerRegister {
 
     private WinterJob toWinterJob(JobProcessor jobProcessor) {
         WinterJob winterJob = new WinterJob();
-        winterJob.setId(timestampGenerator.generate());
+        winterJob.setId(null);
         winterJob.setGmtCreate(new Date());
         winterJob.setGmtModified(new Date());
         winterJob.setName(jobProcessor.getClass().getName());
@@ -116,7 +113,7 @@ public class WinterSchedulerRegister {
     }
 
     public void start() {
-        REGISTER_POOL.scheduleWithFixedDelay(ThreadUtil.wrapperForNoThrowable(() -> {
+        Runnable runnable = () -> {
             while (true) {
                 if (!SystemStatus.running) {
                     return;
@@ -127,25 +124,25 @@ public class WinterSchedulerRegister {
                 }
                 doAddWinterJob(poll);
             }
-        }), 1, 10, TimeUnit.SECONDS);
-
-        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-            @Override
-            public void run() {
-                REGISTER_POOL.shutdown();
-            }
-        }));
+        };
+        // 直接同步运行一次
+        runnable.run();
+        // 定时运行确保动态添加的任务都能注册上
+        REGISTER_POOL.scheduleWithFixedDelay(ThreadUtils.wrapperForNoThrowable(runnable), 10, 10, TimeUnit.SECONDS);
+        // 注册关闭HOOK
+        ThreadUtils.registerForShutdown(REGISTER_POOL);
     }
 
     public void doAddWinterJob(WinterJob winterJob) {
         try {
-            boolean save = winterJobRepository.save(winterJob);
-            if (!save) {
-                log.warn("register job failed winterJob = {}", JsonUtil.toJsonString(winterJob));
-            }
             // 如果是Map类任务，需要将实现的类注册到RPC中，在Map时分发子任务到可用的机器上
             if (winterJob.getJobProcessor() instanceof MapJobProcessor) {
                 registerMapJobProcessorTaskCall(winterJob);
+            }
+            // 保存
+            boolean save = winterJobRepository.save(winterJob);
+            if (!save) {
+                log.warn("register job failed winterJob = {}", JsonUtil.toJsonString(winterJob));
             }
         } catch (Throwable t) {
             log.error("register job exception winterJob = {}", JsonUtil.toJsonString(winterJob), t);

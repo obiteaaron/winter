@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import tech.obiteaaron.winter.common.tools.lock.Lock;
 import tech.obiteaaron.winter.common.tools.lock.Locks;
 import tech.obiteaaron.winter.common.tools.system.SystemStatus;
-import tech.obiteaaron.winter.common.tools.threadpool.ThreadUtil;
+import tech.obiteaaron.winter.common.tools.threadpool.ThreadUtils;
 import tech.obiteaaron.winter.configcenter.Config;
 import tech.obiteaaron.winter.configcenter.ConfigCenter;
 import tech.obiteaaron.winter.configcenter.ConfigManager;
@@ -36,7 +36,7 @@ public class DefaultRegisterWatchDog {
         }
         DefaultRegisterWatchDog.configManager = configManager;
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-        ThreadUtil.registerForShutdown(scheduledExecutorService);
+        ThreadUtils.registerForShutdown(scheduledExecutorService);
         scheduledExecutorService.scheduleAtFixedRate(this::doWatchDog, 30, 30, TimeUnit.SECONDS);
         log.info("DefaultRegisterWatchDog started");
     }

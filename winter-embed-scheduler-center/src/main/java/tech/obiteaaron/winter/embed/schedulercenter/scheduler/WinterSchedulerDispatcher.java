@@ -2,10 +2,10 @@ package tech.obiteaaron.winter.embed.schedulercenter.scheduler;
 
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import tech.obiteaaron.winter.common.tools.id.TimestampGenerator;
 import tech.obiteaaron.winter.common.tools.json.JsonUtil;
 import tech.obiteaaron.winter.common.tools.system.SystemStatus;
 import tech.obiteaaron.winter.common.tools.threadpool.MutableThreadPoolExecutorFactory;
+import tech.obiteaaron.winter.common.tools.threadpool.ThreadUtils;
 import tech.obiteaaron.winter.embed.schedulercenter.JobContext;
 import tech.obiteaaron.winter.embed.schedulercenter.JobProcessor;
 import tech.obiteaaron.winter.embed.schedulercenter.WinterSchedulerCenter;
@@ -48,8 +48,6 @@ public class WinterSchedulerDispatcher {
 
     @Setter
     private WinterSchedulerCenter winterSchedulerCenter;
-
-    private final TimestampGenerator timestampGenerator = new TimestampGenerator();
     /**
      * 后台调度任务的执行周期，也就是最小间隔周期，周期执行任务的时间间隔最小也不会小于这个时间。
      */
@@ -82,6 +80,7 @@ public class WinterSchedulerDispatcher {
                 }
             }
         });
+        ThreadUtils.registerForShutdown(SCHEDULER_POOL);
     }
 
     private void processWinterJob(WinterJob winterJob, String manualParams) {
@@ -109,21 +108,9 @@ public class WinterSchedulerDispatcher {
 
                 winterJobInstance.setBeginTime(new Date());
                 winterJobInstance.setStatus(WinterJobInstanceStatusEnum.RUNNING.name());
-                // 保存实例的执行结果
-                boolean save1 = winterJobInstanceRepository.save(winterJobInstance);
-                if (!save1) {
-                    log.error("WinterScheduler WinterSchedulerExecutor processWinterJob instance running saved failed winterInstanceJob = {}", JsonUtil.toJsonString(winterJobInstance));
-                    return;
-                }
 
                 // 运行
                 winterSchedulerCenter.getWinterSchedulerExecutor().run(winterJob, winterJobInstance, jobContext);
-                // 保存实例的执行结果
-                boolean save2 = winterJobInstanceRepository.save(winterJobInstance);
-                if (!save2) {
-                    log.error("WinterScheduler WinterSchedulerExecutor processWinterJob instance result saved failed winterInstanceJob = {}", JsonUtil.toJsonString(winterJobInstance));
-                    return;
-                }
             });
 
         } catch (Throwable t) {
@@ -133,11 +120,11 @@ public class WinterSchedulerDispatcher {
 
     private WinterJobInstance toWinterJobInstance(WinterJob winterJob, String manualParams) {
         WinterJobInstance instance = new WinterJobInstance();
-        instance.setId(timestampGenerator.generate());
+        instance.setId(null);
         instance.setGmtCreate(winterJob.getGmtCreate());
         instance.setGmtModified(winterJob.getGmtModified());
         instance.setJobId(winterJob.getId());
-        instance.setName(winterJob.getName());
+        instance.setJobName(winterJob.getName());
         instance.setBeginTime(null);
         instance.setEndTime(null);
         instance.setStatus(WinterJobInstanceStatusEnum.WAITING.name());

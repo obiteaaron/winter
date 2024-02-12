@@ -1,8 +1,8 @@
 package tech.obiteaaron.winter.common.tools.threadpool;
 
 import lombok.extern.slf4j.Slf4j;
-import tech.obiteaaron.winter.common.tools.trace.Slf4jMdcUtil;
-import tech.obiteaaron.winter.common.tools.trace.TraceUtil;
+import tech.obiteaaron.winter.common.tools.trace.Slf4jMdcUtils;
+import tech.obiteaaron.winter.common.tools.trace.TraceUtils;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -10,28 +10,28 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
-public class ThreadUtil {
+public class ThreadUtils {
 
     public static Runnable wrapperForSubThread(Runnable runnable) {
-        String traceId = TraceUtil.getTraceId();
+        String traceId = TraceUtils.getTraceId();
         return () -> {
             try {
-                Slf4jMdcUtil.appendMdcForTrace(traceId);
+                Slf4jMdcUtils.appendMdcForTrace(traceId);
                 runnable.run();
             } finally {
-                Slf4jMdcUtil.clearMdcComplete();
+                Slf4jMdcUtils.clearMdcComplete();
             }
         };
     }
 
     public static <V> Callable<V> wrapperForSubThread(Callable<V> callable) {
-        String traceId = TraceUtil.getTraceId();
+        String traceId = TraceUtils.getTraceId();
         return () -> {
             try {
-                Slf4jMdcUtil.appendMdcForTrace(traceId);
+                Slf4jMdcUtils.appendMdcForTrace(traceId);
                 return callable.call();
             } finally {
-                Slf4jMdcUtil.clearMdcComplete();
+                Slf4jMdcUtils.clearMdcComplete();
             }
         };
     }

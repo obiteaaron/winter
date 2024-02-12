@@ -6,7 +6,7 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import tech.obiteaaron.winter.common.tools.trace.Slf4jMdcUtil;
+import tech.obiteaaron.winter.common.tools.trace.Slf4jMdcUtils;
 import tech.obiteaaron.winter.embed.rpc.WinterRpcBootstrap;
 import tech.obiteaaron.winter.embed.rpc.server.HttpServer;
 
@@ -66,7 +66,7 @@ public class VertxHttpServerImpl extends AbstractVerticle implements HttpServer 
         String traceId = httpServerRequest.getParam("traceId");
         httpServerRequest.bodyHandler(body -> {
             try {
-                Slf4jMdcUtil.appendMdcForTrace(traceId);
+                Slf4jMdcUtils.appendMdcForTrace(traceId);
                 String result = winterRpcBootstrap.getProviderDispatcher().dispatch(httpServerRequest, body.toString(StandardCharsets.UTF_8));
                 httpServerRequest.response()
                         .putHeader("content-type", "text/plain")
@@ -78,7 +78,7 @@ public class VertxHttpServerImpl extends AbstractVerticle implements HttpServer 
                         .putHeader("content-type", "text/plain")
                         .end("FAILED:" + t.toString());
             } finally {
-                Slf4jMdcUtil.clearMdcComplete();
+                Slf4jMdcUtils.clearMdcComplete();
             }
         });
     }

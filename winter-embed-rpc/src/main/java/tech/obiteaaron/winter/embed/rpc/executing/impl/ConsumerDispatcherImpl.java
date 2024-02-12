@@ -6,7 +6,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import tech.obiteaaron.winter.common.tools.http.CommonOkHttpClient;
-import tech.obiteaaron.winter.common.tools.trace.Slf4jMdcUtil;
+import tech.obiteaaron.winter.common.tools.trace.Slf4jMdcUtils;
 import tech.obiteaaron.winter.embed.registercenter.model.URL;
 import tech.obiteaaron.winter.embed.rpc.WinterRpcBootstrap;
 import tech.obiteaaron.winter.embed.rpc.constant.InvokerStage;
@@ -43,7 +43,7 @@ public class ConsumerDispatcherImpl implements ConsumerDispatcher {
         invokeContext.setServiceName(consumerConfig.getInterfaceName());
         invokeContext.setMethodSignature(MethodUtil.generateMethodSignature(method));
         invokeContext.setArguments(args);
-        invokeContext.setTraceId(Slf4jMdcUtil.getTraceId());
+        invokeContext.setTraceId(Slf4jMdcUtils.getTraceId());
         invokeContext.setApplicationName(winterRpcBootstrap.getApplicationName());
 
         // 构造调用链

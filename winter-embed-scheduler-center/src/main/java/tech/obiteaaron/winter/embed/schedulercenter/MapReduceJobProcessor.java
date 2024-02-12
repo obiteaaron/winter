@@ -11,6 +11,11 @@ public interface MapReduceJobProcessor extends MapJobProcessor {
     @Override
     JobResult doProcessOnce(JobContext jobContext);
 
+    @Override
+    default void map(JobContext jobContext, List<String> taskInfoList) {
+        MapJobProcessor.super.map(jobContext, taskInfoList);
+        // TODO 如果是Reduce实现存储子任务信息，子任务需要等待客户端执行结果上报以方便Reduce使用，如果不是Reduce接口，则不存储子任务
+    }
 
     /**
      * 最终归集子任务

@@ -3,15 +3,19 @@ package tech.obiteaaron.winter.embed.schedulercenter.executor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import tech.obiteaaron.winter.common.tools.json.JsonUtil;
 import tech.obiteaaron.winter.common.tools.lock.Lock;
 import tech.obiteaaron.winter.common.tools.lock.Locks;
+import tech.obiteaaron.winter.common.tools.system.SystemStatus;
 import tech.obiteaaron.winter.common.tools.threadpool.MutableThreadPoolExecutorFactory;
+import tech.obiteaaron.winter.common.tools.threadpool.ThreadUtils;
 import tech.obiteaaron.winter.embed.schedulercenter.JobContext;
 import tech.obiteaaron.winter.embed.schedulercenter.JobProcessor;
 import tech.obiteaaron.winter.embed.schedulercenter.JobResult;
 import tech.obiteaaron.winter.embed.schedulercenter.model.WinterJob;
 import tech.obiteaaron.winter.embed.schedulercenter.model.WinterJobInstance;
 import tech.obiteaaron.winter.embed.schedulercenter.model.WinterJobInstanceStatusEnum;
+import tech.obiteaaron.winter.embed.schedulercenter.repository.WinterJobInstanceRepository;
 
 import java.util.Date;
 import java.util.concurrent.ExecutorService;
@@ -28,11 +32,20 @@ public class WinterSchedulerExecutor {
     @Getter
     private int poolSize = 256;
 
+    @Setter
+    private WinterJobInstanceRepository winterJobInstanceRepository;
+
     private final ExecutorService EXECUTOR_POOL = MutableThreadPoolExecutorFactory.newCallerRunPool("WinterSchedulerCenter#Executor#" + this.hashCode(), () -> poolSize, 0);
 
+    public WinterSchedulerExecutor() {
+        ThreadUtils.registerForShutdown(EXECUTOR_POOL);
+    }
 
     public void run(WinterJob winterJob, WinterJobInstance winterJobInstance, JobContext jobContext) {
         EXECUTOR_POOL.submit(() -> {
+            if (!SystemStatus.running) {
+                return;
+            }
             doRun(winterJob, winterJobInstance, jobContext);
         });
     }
@@ -50,6 +63,13 @@ public class WinterSchedulerExecutor {
                 winterJobInstance.setMessage("WinterSchedulerExecutor tryLock failed");
                 return;
             }
+            // 保存实例的执行结果
+            boolean save1 = winterJobInstanceRepository.save(winterJobInstance);
+            if (!save1) {
+                log.error("WinterScheduler WinterSchedulerExecutor processWinterJob instance running saved failed. winterInstanceJob = {}", JsonUtil.toJsonString(winterJobInstance));
+                return;
+            }
+
             JobProcessor jobProcessor = winterJobInstance.getJobProcessor();
             JobResult jobResult = jobProcessor.process(jobContext);
 
@@ -62,6 +82,18 @@ public class WinterSchedulerExecutor {
                 winterJobInstance.setEndTime(new Date());
                 winterJobInstance.setStatus(WinterJobInstanceStatusEnum.SUCCEED.name());
                 winterJobInstance.setMessage("");
+            }
+        } catch (Exception e) {
+            log.error("WinterScheduler WinterSchedulerExecutor processWinterJob instance running exception. winterInstanceJob = {}", JsonUtil.toJsonString(winterJobInstance), e);
+            winterJobInstance.setEndTime(new Date());
+            winterJobInstance.setStatus(WinterJobInstanceStatusEnum.FAILED.name());
+            winterJobInstance.setMessage(e.toString());
+        } finally {
+            // 保存实例的执行结果
+            boolean save2 = winterJobInstanceRepository.save(winterJobInstance);
+            if (!save2) {
+                log.error("WinterScheduler WinterSchedulerExecutor processWinterJob instance result saved failed. winterInstanceJob = {}", JsonUtil.toJsonString(winterJobInstance));
+                return;
             }
         }
     }

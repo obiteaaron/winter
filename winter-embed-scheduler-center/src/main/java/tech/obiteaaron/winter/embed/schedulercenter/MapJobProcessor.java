@@ -1,5 +1,6 @@
 package tech.obiteaaron.winter.embed.schedulercenter;
 
+import org.jetbrains.annotations.NotNull;
 import tech.obiteaaron.winter.embed.rpc.regesiter.ConsumerConfig;
 
 import java.lang.reflect.Method;
@@ -32,12 +33,7 @@ public interface MapJobProcessor extends LongTimeJobProcessor {
      * @param taskInfoList 子任务列表，用字符串表示，可以自行拼装
      */
     default void map(JobContext jobContext, List<String> taskInfoList) {
-        Method processMethod = null;
-        try {
-            processMethod = this.getClass().getMethod("process", JobContext.class);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        }
+        Method processMethod = getProcessMethod();
         JobContext jobContextSub = new JobContext();
         jobContextSub.setJobId(jobContext.getJobId());
         jobContextSub.setInstanceId(jobContext.getInstanceId());
@@ -61,6 +57,15 @@ public interface MapJobProcessor extends LongTimeJobProcessor {
             return;
         } else {
             throw new RuntimeException("map task dispatch failed: " + Optional.ofNullable(jobResult).map(JobResult::getMessage).orElse("result no message"));
+        }
+    }
+
+    @NotNull
+    default Method getProcessMethod() {
+        try {
+            return this.getClass().getMethod("process", JobContext.class);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
         }
     }
 }

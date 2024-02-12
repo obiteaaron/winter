@@ -6,7 +6,7 @@ import org.slf4j.MDC;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
-public class Slf4jMdcUtil {
+public class Slf4jMdcUtils {
 
     private static final ThreadLocal<AtomicInteger> ENTRY_TIMES = ThreadLocal.withInitial(AtomicInteger::new);
 
@@ -28,7 +28,7 @@ public class Slf4jMdcUtil {
                 // 同线程重入的直接跳过
                 return;
             }
-            String newTraceId = TraceUtil.startTrace(traceId);
+            String newTraceId = TraceUtils.startTrace(traceId);
             MDC.put("TRACE_ID", newTraceId);
         } catch (Throwable t) {
             log.error("appendMdc Exception", t);
@@ -57,6 +57,6 @@ public class Slf4jMdcUtil {
     }
 
     public static String getTraceId() {
-        return TraceUtil.getTraceId();
+        return TraceUtils.getTraceId();
     }
 }
