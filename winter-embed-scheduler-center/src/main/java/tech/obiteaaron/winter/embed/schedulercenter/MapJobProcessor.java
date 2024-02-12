@@ -53,6 +53,7 @@ public interface MapJobProcessor extends LongTimeJobProcessor {
                 .tags(null)
                 .build();
         // Map在此处只管分发，不管结果，分发成功即可。如果需要结果，可以使用Reduce任务。
+        // 注意：Map任务分发最好到最细粒度，Map任务分发是同步执行返回结果，执行时请不要阻塞太久，避免RPC线程整体阻塞导致性能下降。
         Object dispatchResult = WinterSchedulerCenter.INSTANCE.getWinterRpcBootstrap().getConsumerDispatcher().dispatch(null, processMethod, new Object[]{jobContextSub}, consumerConfig);
 
         JobResult jobResult = (JobResult) dispatchResult;

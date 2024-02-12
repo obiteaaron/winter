@@ -9,6 +9,7 @@ import tech.obiteaaron.winter.embed.schedulercenter.model.WinterJob;
 import tech.obiteaaron.winter.embed.schedulercenter.repository.WinterJobInstanceRepository;
 import tech.obiteaaron.winter.embed.schedulercenter.repository.WinterJobInstanceTaskRepository;
 import tech.obiteaaron.winter.embed.schedulercenter.repository.WinterJobRepository;
+import tech.obiteaaron.winter.embed.schedulercenter.repository.impl.memory.WinterJobInstanceMemoryRepositoryImpl;
 import tech.obiteaaron.winter.embed.schedulercenter.repository.impl.memory.WinterJobMemoryRepositoryImpl;
 import tech.obiteaaron.winter.embed.schedulercenter.scheduler.WinterSchedulerDispatcher;
 import tech.obiteaaron.winter.embed.schedulercenter.scheduler.WinterSchedulerRegister;
@@ -30,7 +31,7 @@ public final class WinterSchedulerCenter {
 
     private WinterJobRepository winterJobRepository = new WinterJobMemoryRepositoryImpl();
 
-    private WinterJobInstanceRepository winterJobInstanceRepository;
+    private WinterJobInstanceRepository winterJobInstanceRepository = new WinterJobInstanceMemoryRepositoryImpl();
 
     private WinterJobInstanceTaskRepository winterJobInstanceTaskRepository;
     /**
