@@ -10,7 +10,7 @@
 
 【Release】winter-embed-rpc：嵌入式RPC框架，提供基本的服务注册、服务远程调用功能，基于HTTP(S)提供远程调用，大部分组件可以自由替换和扩展。
 
-【Planning】winter-scheduler-center-embed：嵌入式调度中心，提供集群内的执行单机任务、执行单机常驻任务、执行MapReduce任务的能力，依赖注册中心。
+【Alpha】winter-scheduler-center-embed：嵌入式调度中心，提供集群内的执行单机任务、执行单机常驻任务、执行MapReduce任务的能力，依赖注册中心。
 
 【Planning】winter-workflow-engine-embed：嵌入式流程引擎，基于SmartEngine扩展，实现基于内存的BPMN流程执行引擎。
 
