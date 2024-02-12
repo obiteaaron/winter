@@ -8,7 +8,7 @@ import com.cronutils.model.time.ExecutionTime;
 import com.cronutils.parser.CronParser;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.ObjectUtils;
-import tech.obiteaaron.winter.common.tools.json.JsonUtil;
+import tech.obiteaaron.winter.common.tools.json.JsonUtils;
 import tech.obiteaaron.winter.embed.schedulercenter.JobProcessor;
 import tech.obiteaaron.winter.embed.schedulercenter.WinterScheduled;
 import tech.obiteaaron.winter.embed.schedulercenter.model.WinterJob;
@@ -36,7 +36,7 @@ public class CronTimeStrategyImpl implements TimeStrategy {
         String cron = winterScheduled.cron();
         // 顺便验证一下是否支持
         Cron parse = cronParser.parse(cron);
-        return JsonUtil.toJsonString(ImmutableMap.of("cron", winterScheduled.cron()));
+        return JsonUtils.toJsonString(ImmutableMap.of("cron", winterScheduled.cron()));
     }
 
     @Override
@@ -53,7 +53,7 @@ public class CronTimeStrategyImpl implements TimeStrategy {
             return null;
         }
         String timeExpression = winterJob.getTimeExpression();
-        Map map = JsonUtil.parseObject(timeExpression, Map.class);
+        Map map = JsonUtils.parseObject(timeExpression, Map.class);
         String cronString = (String) map.get("cron");
         Cron cron = cronParser.parse(cronString);
         ExecutionTime executionTime = ExecutionTime.forCron(cron);

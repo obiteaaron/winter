@@ -1,7 +1,7 @@
 package tech.obiteaaron.winter.embed.rpc.serializer;
 
 import com.fasterxml.jackson.databind.JavaType;
-import tech.obiteaaron.winter.common.tools.json.JsonUtil;
+import tech.obiteaaron.winter.common.tools.json.JsonUtils;
 import tech.obiteaaron.winter.embed.rpc.executing.InvokeContext;
 
 import java.util.Arrays;
@@ -23,7 +23,7 @@ public class JsonWinterDeserializer implements WinterDeserializer {
             if (value == null) {
                 return Arrays.stream(types).map(item -> null).collect(Collectors.toList());
             }
-            List<Object> arguments = JsonUtil.parseArray(value, Object.class);
+            List<Object> arguments = JsonUtils.parseArray(value, Object.class);
             Object[] objects = new Object[types.length];
             int i = 0;
             for (Object argument : arguments) {
@@ -31,9 +31,9 @@ public class JsonWinterDeserializer implements WinterDeserializer {
                     objects[i++] = null;
                     continue;
                 }
-                String jsonString = JsonUtil.toJsonString(argument);
-                JavaType javaType = JsonUtil.getTypeFactory().constructFromCanonical(types[i]);
-                Object o = JsonUtil.parseObject(jsonString, javaType);
+                String jsonString = JsonUtils.toJsonString(argument);
+                JavaType javaType = JsonUtils.getTypeFactory().constructFromCanonical(types[i]);
+                Object o = JsonUtils.parseObject(jsonString, javaType);
                 objects[i++] = o;
             }
             return objects;
@@ -43,20 +43,20 @@ public class JsonWinterDeserializer implements WinterDeserializer {
             }
             // 按返回值的 Object 反序列化
             // 单值对象
-            JavaType javaType = JsonUtil.getTypeFactory().constructFromCanonical(types[0]);
+            JavaType javaType = JsonUtils.getTypeFactory().constructFromCanonical(types[0]);
             if (InvokeContext.class.getCanonicalName().equals(types[0])) {
-                InvokeContext invokeContext = JsonUtil.parseObject(value, javaType);
+                InvokeContext invokeContext = JsonUtils.parseObject(value, javaType);
 
                 // 特殊处理，二次序列化参数类型
                 Object[] arguments = invokeContext.getArguments();
                 if (arguments != null) {
                     String[] argumentTypes = invocationParameterTypes;
-                    Object deserializer = this.deserializer(JsonUtil.toJsonString(arguments), true, argumentTypes, null);
+                    Object deserializer = this.deserializer(JsonUtils.toJsonString(arguments), true, argumentTypes, null);
                     invokeContext.setArguments((Object[]) deserializer);
                 }
                 return invokeContext;
             } else {
-                return JsonUtil.parseObject(value, javaType);
+                return JsonUtils.parseObject(value, javaType);
             }
         }
     }

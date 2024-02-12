@@ -33,7 +33,7 @@ public interface MapJobProcessor extends LongTimeJobProcessor {
      * @param taskInfoList 子任务列表，用字符串表示，可以自行拼装
      */
     default void map(JobContext jobContext, List<String> taskInfoList) {
-        Method processMethod = getProcessMethod();
+        Method processMethod = findTheProcessMethod();
         JobContext jobContextSub = new JobContext();
         jobContextSub.setJobId(jobContext.getJobId());
         jobContextSub.setInstanceId(jobContext.getInstanceId());
@@ -41,6 +41,13 @@ public interface MapJobProcessor extends LongTimeJobProcessor {
         // 把子任务的信息通过参数带过去
         jobContextSub.setMapTaskList(taskInfoList);
         jobContextSub.setTaskType(JobContext.TaskTypeEnum.MAP_SUB_TASK.name());
+
+        boolean enableMapJobClusterRpc = WinterSchedulerCenter.INSTANCE.getWinterSchedulerCenterConfig().isEnableMapJobClusterRpc();
+        if (!enableMapJobClusterRpc) {
+            // 如果RPC开关关闭，则直接本地调用（注意栈深度）
+            process(jobContextSub);
+            return;
+        }
 
         ConsumerConfig consumerConfig = ConsumerConfig.builder()
                 .interfaceName(this.getClass().getName())
@@ -61,7 +68,7 @@ public interface MapJobProcessor extends LongTimeJobProcessor {
     }
 
     @NotNull
-    default Method getProcessMethod() {
+    default Method findTheProcessMethod() {
         try {
             return this.getClass().getMethod("process", JobContext.class);
         } catch (NoSuchMethodException e) {

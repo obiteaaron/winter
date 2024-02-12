@@ -3,7 +3,7 @@ package tech.obiteaaron.winter.embed.schedulercenter.scheduler;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import tech.obiteaaron.winter.common.tools.json.JsonUtil;
+import tech.obiteaaron.winter.common.tools.json.JsonUtils;
 import tech.obiteaaron.winter.common.tools.system.SystemStatus;
 import tech.obiteaaron.winter.common.tools.threadpool.ThreadUtils;
 import tech.obiteaaron.winter.embed.rpc.WinterRpcBootstrap;
@@ -135,17 +135,19 @@ public class WinterSchedulerRegister {
 
     public void doAddWinterJob(WinterJob winterJob) {
         try {
-            // 如果是Map类任务，需要将实现的类注册到RPC中，在Map时分发子任务到可用的机器上
-            if (winterJob.getJobProcessor() instanceof MapJobProcessor) {
-                registerMapJobProcessorTaskCall(winterJob);
+            if (winterSchedulerCenter.getWinterSchedulerCenterConfig().isEnableMapJobClusterRpc()) {
+                // 如果是Map类任务，需要将实现的类注册到RPC中，在Map时分发子任务到可用的机器上
+                if (winterJob.getJobProcessor() instanceof MapJobProcessor) {
+                    registerMapJobProcessorTaskCall(winterJob);
+                }
             }
             // 保存
             boolean save = winterJobRepository.save(winterJob);
             if (!save) {
-                log.warn("register job failed winterJob = {}", JsonUtil.toJsonString(winterJob));
+                log.warn("register job failed winterJob = {}", JsonUtils.toJsonString(winterJob));
             }
         } catch (Throwable t) {
-            log.error("register job exception winterJob = {}", JsonUtil.toJsonString(winterJob), t);
+            log.error("register job exception winterJob = {}", JsonUtils.toJsonString(winterJob), t);
         }
     }
 

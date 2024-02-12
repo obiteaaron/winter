@@ -2,7 +2,7 @@ package tech.obiteaaron.winter.embed.schedulercenter.scheduler;
 
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import tech.obiteaaron.winter.common.tools.json.JsonUtil;
+import tech.obiteaaron.winter.common.tools.json.JsonUtils;
 import tech.obiteaaron.winter.common.tools.system.SystemStatus;
 import tech.obiteaaron.winter.common.tools.threadpool.MutableThreadPoolExecutorFactory;
 import tech.obiteaaron.winter.common.tools.threadpool.ThreadUtils;
@@ -89,7 +89,7 @@ public class WinterSchedulerDispatcher {
             WinterJobInstance winterJobInstance = toWinterJobInstance(winterJob, manualParams);
             boolean save = winterJobInstanceRepository.save(winterJobInstance);
             if (!save) {
-                log.error("WinterScheduler WinterSchedulerExecutor processWinterJob instance saved failed winterJob = {}", JsonUtil.toJsonString(winterJob));
+                log.error("WinterScheduler WinterSchedulerExecutor processWinterJob instance saved failed winterJob = {}", JsonUtils.toJsonString(winterJob));
                 return;
             }
             // 推入时间轮
@@ -147,7 +147,7 @@ public class WinterSchedulerDispatcher {
         }
         boolean save = winterJobRepository.save(winterJob);
         if (!save) {
-            log.warn("refresh job failed winterJob = {}", JsonUtil.toJsonString(winterJob));
+            log.warn("refresh job failed winterJob = {}", JsonUtils.toJsonString(winterJob));
         }
     }
 

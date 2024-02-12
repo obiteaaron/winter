@@ -3,7 +3,7 @@ package tech.obiteaaron.winter.embed.registercenter.impl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
-import tech.obiteaaron.winter.common.tools.json.JsonUtil;
+import tech.obiteaaron.winter.common.tools.json.JsonUtils;
 import tech.obiteaaron.winter.configcenter.Config;
 import tech.obiteaaron.winter.configcenter.ConfigCenter;
 import tech.obiteaaron.winter.configcenter.ConfigManager;
@@ -76,7 +76,7 @@ public class DefaultRegisterServiceImpl implements RegisterService {
     }
 
     private String parseContent(URL url) {
-        return JsonUtil.toJsonString(url);
+        return JsonUtils.toJsonString(url);
     }
 
     @Override
@@ -132,7 +132,7 @@ public class DefaultRegisterServiceImpl implements RegisterService {
                 .filter(item -> Objects.equals(item.getGroupName(), group))
                 .filter(item -> StringUtils.startsWith(item.getName(), name))
                 .filter(item -> item.getGmtModified() != null && item.getGmtModified().getTime() > validProviderTime)
-                .map(item -> JsonUtil.parseObject(item.getContent(), URL.class))
+                .map(item -> JsonUtils.parseObject(item.getContent(), URL.class))
                 .collect(Collectors.toList());
         return collect;
     }

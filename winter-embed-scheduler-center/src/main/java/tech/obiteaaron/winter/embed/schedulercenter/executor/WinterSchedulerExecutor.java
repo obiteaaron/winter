@@ -3,7 +3,7 @@ package tech.obiteaaron.winter.embed.schedulercenter.executor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import tech.obiteaaron.winter.common.tools.json.JsonUtil;
+import tech.obiteaaron.winter.common.tools.json.JsonUtils;
 import tech.obiteaaron.winter.common.tools.lock.Lock;
 import tech.obiteaaron.winter.common.tools.lock.Locks;
 import tech.obiteaaron.winter.common.tools.system.SystemStatus;
@@ -66,7 +66,7 @@ public class WinterSchedulerExecutor {
             // 保存实例的执行结果
             boolean save1 = winterJobInstanceRepository.save(winterJobInstance);
             if (!save1) {
-                log.error("WinterScheduler WinterSchedulerExecutor processWinterJob instance running saved failed. winterInstanceJob = {}", JsonUtil.toJsonString(winterJobInstance));
+                log.error("WinterScheduler WinterSchedulerExecutor processWinterJob instance running saved failed. winterInstanceJob = {}", JsonUtils.toJsonString(winterJobInstance));
                 return;
             }
 
@@ -84,7 +84,7 @@ public class WinterSchedulerExecutor {
                 winterJobInstance.setMessage("");
             }
         } catch (Exception e) {
-            log.error("WinterScheduler WinterSchedulerExecutor processWinterJob instance running exception. winterInstanceJob = {}", JsonUtil.toJsonString(winterJobInstance), e);
+            log.error("WinterScheduler WinterSchedulerExecutor processWinterJob instance running exception. winterInstanceJob = {}", JsonUtils.toJsonString(winterJobInstance), e);
             winterJobInstance.setEndTime(new Date());
             winterJobInstance.setStatus(WinterJobInstanceStatusEnum.FAILED.name());
             winterJobInstance.setMessage(e.toString());
@@ -92,7 +92,7 @@ public class WinterSchedulerExecutor {
             // 保存实例的执行结果
             boolean save2 = winterJobInstanceRepository.save(winterJobInstance);
             if (!save2) {
-                log.error("WinterScheduler WinterSchedulerExecutor processWinterJob instance result saved failed. winterInstanceJob = {}", JsonUtil.toJsonString(winterJobInstance));
+                log.error("WinterScheduler WinterSchedulerExecutor processWinterJob instance result saved failed. winterInstanceJob = {}", JsonUtils.toJsonString(winterJobInstance));
                 return;
             }
         }

@@ -3,7 +3,7 @@ package tech.obiteaaron.winter.embed.schedulercenter;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import tech.obiteaaron.winter.common.tools.json.JsonUtil;
+import tech.obiteaaron.winter.common.tools.json.JsonUtils;
 import tech.obiteaaron.winter.configcenter.ConfigValue;
 
 @Slf4j
@@ -21,7 +21,7 @@ public class MapJobProcessorTest implements MapJobProcessor {
         if (!jobContext.isMapSubTask()) {
             map(jobContext, Lists.newArrayList("1", "2"));
         } else {
-            log.info("MapJobProcessorTest subTask process " + JsonUtil.toJsonString(jobContext.getMapTaskList()));
+            log.info("MapJobProcessorTest subTask process " + JsonUtils.toJsonString(jobContext.getMapTaskList()));
         }
         return JobResult.success();
     }

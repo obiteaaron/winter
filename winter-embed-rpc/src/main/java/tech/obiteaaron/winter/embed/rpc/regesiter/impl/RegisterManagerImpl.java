@@ -8,7 +8,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.util.ReflectionUtils;
-import tech.obiteaaron.winter.common.tools.json.JsonUtil;
+import tech.obiteaaron.winter.common.tools.json.JsonUtils;
 import tech.obiteaaron.winter.embed.registercenter.RegisterService;
 import tech.obiteaaron.winter.embed.registercenter.model.URL;
 import tech.obiteaaron.winter.embed.rpc.WinterRpcBootstrap;
@@ -112,7 +112,7 @@ public class RegisterManagerImpl implements RegisterManager {
 
     @Override
     public void unregister(ProviderConfig providerConfig) {
-        log.info("unregister {}", JsonUtil.toJsonString(providerConfig));
+        log.info("unregister {}", JsonUtils.toJsonString(providerConfig));
         URL url = providerConfigToUrl(providerConfig);
         registerService.unregister(url);
     }

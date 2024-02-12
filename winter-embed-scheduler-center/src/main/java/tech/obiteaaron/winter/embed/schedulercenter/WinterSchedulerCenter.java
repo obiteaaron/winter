@@ -25,12 +25,15 @@ public final class WinterSchedulerCenter {
      */
     public static final WinterSchedulerCenter INSTANCE = new WinterSchedulerCenter();
 
-    private static final AtomicBoolean initialized = new AtomicBoolean();
+    private final AtomicBoolean initialized = new AtomicBoolean();
 
+    @Getter
     private WinterSchedulerCenterConfig winterSchedulerCenterConfig = new WinterSchedulerCenterConfig();
 
+    @Getter
     private WinterJobRepository winterJobRepository = new WinterJobMemoryRepositoryImpl();
 
+    @Getter
     private WinterJobInstanceRepository winterJobInstanceRepository = new WinterJobInstanceMemoryRepositoryImpl();
 
     private WinterJobInstanceTaskRepository winterJobInstanceTaskRepository;
@@ -40,6 +43,7 @@ public final class WinterSchedulerCenter {
     @Getter
     private WinterRpcBootstrap winterRpcBootstrap;
 
+    @Getter
     private BeanParser beanParser;
 
     @Getter
@@ -89,6 +93,7 @@ public final class WinterSchedulerCenter {
     private void realStart() {
         // 启动注册服务
         winterSchedulerRegister.setWinterJobRepository(Objects.requireNonNull(winterJobRepository, "winterJobRepository cannot be null"));
+        winterSchedulerRegister.setWinterSchedulerCenter(this);
         winterSchedulerRegister.start();
         // 等待注册服务启动后，将Map类的服务提供者注册上去。
         try {
@@ -107,7 +112,7 @@ public final class WinterSchedulerCenter {
         winterSchedulerExecutor.setPoolSize(winterSchedulerCenterConfig.getThreadPoolSize());
         winterSchedulerExecutor.setWinterJobInstanceRepository(winterJobInstanceRepository);
         // TODO 初始化RPC独享实例，用Map、MapReduce任务
-        if (winterSchedulerCenterConfig.isEnableMapJobClusterRpc()) {
+        if (winterSchedulerCenterConfig.isEnableMapJobClusterRpc() && winterRpcBootstrap == null) {
 //        winterRpcBootstrap.start();
         }
     }

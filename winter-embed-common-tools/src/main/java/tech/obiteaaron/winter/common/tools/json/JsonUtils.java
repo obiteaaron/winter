@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * JSON解析工具，整个工程全部都采用这个工具进行解析，方便统一替换具体实现类
  */
-public class JsonUtil {
+public class JsonUtils {
 
     private static final ObjectMapper objectMapper;
 

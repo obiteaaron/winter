@@ -6,7 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
-import tech.obiteaaron.winter.common.tools.json.JsonUtil;
+import tech.obiteaaron.winter.common.tools.json.JsonUtils;
 
 import java.io.IOException;
 import java.util.Map;
@@ -99,16 +99,16 @@ public final class CommonOkHttpClient {
     private String doExecute(Request request) {
         try (Response response = okHttpClient.newCall(request).execute()) {
             if (!response.isSuccessful()) {
-                log.error("OkHttp_Failed {}", JsonUtil.toJsonString(response));
+                log.error("OkHttp_Failed {}", JsonUtils.toJsonString(response));
                 throw new RuntimeException("OkHttp_Failed");
             }
             if (response.isRedirect()) {
-                log.error("OkHttp_Redirect {}", JsonUtil.toJsonString(response));
+                log.error("OkHttp_Redirect {}", JsonUtils.toJsonString(response));
                 throw new RuntimeException("OkHttp_Redirect");
             }
             ResponseBody body = response.body();
             if (body == null) {
-                log.error("OkHttp_EmptyBody {}", JsonUtil.toJsonString(response));
+                log.error("OkHttp_EmptyBody {}", JsonUtils.toJsonString(response));
                 throw new RuntimeException("OkHttp_EmptyBody");
             }
             return body.string();
