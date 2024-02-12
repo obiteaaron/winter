@@ -10,9 +10,9 @@ import tech.obiteaaron.winter.common.tools.threadpool.ThreadUtil;
 import tech.obiteaaron.winter.embed.rpc.WinterRpcBootstrap;
 import tech.obiteaaron.winter.embed.rpc.regesiter.ProviderConfig;
 import tech.obiteaaron.winter.embed.schedulercenter.*;
-import tech.obiteaaron.winter.embed.schedulercenter.model.TimeTypeEnum;
 import tech.obiteaaron.winter.embed.schedulercenter.model.WinterJob;
-import tech.obiteaaron.winter.embed.schedulercenter.model.WinterJonStatusEnum;
+import tech.obiteaaron.winter.embed.schedulercenter.model.WinterJobStatusEnum;
+import tech.obiteaaron.winter.embed.schedulercenter.model.WinterJobTimeTypeEnum;
 import tech.obiteaaron.winter.embed.schedulercenter.repository.WinterJobRepository;
 import tech.obiteaaron.winter.embed.schedulercenter.timing.TimeStrategy;
 
@@ -65,7 +65,7 @@ public class WinterSchedulerRegister {
         winterJob.setBeginTime(null);
         winterJob.setEndTime(null);
         winterJob.setNextTriggerTime(resolveNextTriggerTime(winterJob, jobProcessor));
-        winterJob.setStatus(WinterJonStatusEnum.NORMAL.name());
+        winterJob.setStatus(WinterJobStatusEnum.NORMAL.name());
         winterJob.setFeatures(null);
         winterJob.setExtraInfo(null);
         return winterJob;
@@ -91,13 +91,13 @@ public class WinterSchedulerRegister {
         WinterScheduled winterScheduled = jobProcessor.getClass().getAnnotation(WinterScheduled.class);
         Objects.requireNonNull(winterScheduled, "@WinterScheduled cannot be null");
         if (winterScheduled.fixedDelay() > 0) {
-            return TimeTypeEnum.FIXED_DELAY.name();
+            return WinterJobTimeTypeEnum.FIXED_DELAY.name();
         }
         if (winterScheduled.fixedRate() > 0) {
-            return TimeTypeEnum.FIXED_RATE.name();
+            return WinterJobTimeTypeEnum.FIXED_RATE.name();
         }
         if (StringUtils.isNotBlank(winterScheduled.cron())) {
-            return TimeTypeEnum.CRON.name();
+            return WinterJobTimeTypeEnum.CRON.name();
         }
         throw new UnsupportedOperationException("@WinterScheduled resolveTimeType failed");
     }

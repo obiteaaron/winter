@@ -11,23 +11,30 @@ import java.util.concurrent.TimeUnit;
 public interface LongTimeJobProcessor extends JobProcessor {
 
     @Override
-    default void doProcess(JobContext jobContext) {
+    default JobResult doProcess(JobContext jobContext) {
         // 分阶段执行
+        JobResult jobResult = null;
         do {
             try {
                 beforeRunOnce(jobContext);
-                doProcessOnce(jobContext);
+                jobResult = doProcessOnce(jobContext);
+                // 执行失败则直接返回，执行成功则尝试常驻执行
+                if (jobResult != null && !jobResult.isSuccess()) {
+                    return jobResult;
+                }
             } finally {
                 afterRunOnce(jobContext);
             }
         } while (isLongTimeRunning(jobContext) && sleepOnce(jobContext));
+        // 只返回最后一次的执行结果
+        return jobResult;
     }
 
     default void beforeRunOnce(JobContext jobContext) {
 
     }
 
-    void doProcessOnce(JobContext jobContext);
+    JobResult doProcessOnce(JobContext jobContext);
 
     default boolean isLongTimeRunning(JobContext jobContext) {
         return SystemStatus.running;

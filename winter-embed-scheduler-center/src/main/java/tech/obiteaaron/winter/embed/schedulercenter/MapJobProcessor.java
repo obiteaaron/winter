@@ -5,6 +5,7 @@ import tech.obiteaaron.winter.embed.rpc.regesiter.ConsumerConfig;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * 多机分发任务处理器，分发后不合并结果
@@ -13,7 +14,7 @@ import java.util.Objects;
 public interface MapJobProcessor extends LongTimeJobProcessor {
 
     @Override
-    void doProcessOnce(JobContext jobContext);
+    JobResult doProcessOnce(JobContext jobContext);
 
     @Override
     default boolean isLongTimeRunning(JobContext jobContext) {
@@ -54,5 +55,11 @@ public interface MapJobProcessor extends LongTimeJobProcessor {
         // Map在此处只管分发，不管结果，分发成功即可。如果需要结果，可以使用Reduce任务。
         Object dispatchResult = WinterSchedulerCenter.INSTANCE.getWinterRpcBootstrap().getConsumerDispatcher().dispatch(null, processMethod, new Object[]{jobContextSub}, consumerConfig);
 
+        JobResult jobResult = (JobResult) dispatchResult;
+        if (jobResult != null && jobResult.isSuccess()) {
+            return;
+        } else {
+            throw new RuntimeException("map task dispatch failed: " + Optional.ofNullable(jobResult).map(JobResult::getMessage).orElse("result no message"));
+        }
     }
 }

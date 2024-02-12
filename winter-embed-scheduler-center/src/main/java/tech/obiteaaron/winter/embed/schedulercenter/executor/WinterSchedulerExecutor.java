@@ -8,9 +8,12 @@ import tech.obiteaaron.winter.common.tools.lock.Locks;
 import tech.obiteaaron.winter.common.tools.threadpool.MutableThreadPoolExecutorFactory;
 import tech.obiteaaron.winter.embed.schedulercenter.JobContext;
 import tech.obiteaaron.winter.embed.schedulercenter.JobProcessor;
+import tech.obiteaaron.winter.embed.schedulercenter.JobResult;
 import tech.obiteaaron.winter.embed.schedulercenter.model.WinterJob;
 import tech.obiteaaron.winter.embed.schedulercenter.model.WinterJobInstance;
+import tech.obiteaaron.winter.embed.schedulercenter.model.WinterJobInstanceStatusEnum;
 
+import java.util.Date;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -41,12 +44,25 @@ public class WinterSchedulerExecutor {
         try (Lock lock = Locks.newRedisLock(lockKey)) {
             if (!lock.tryLock()) {
                 log.warn("WinterSchedulerExecutor tryLock failed, ignore executing lockKey={}", lockKey);
-                // TODO 更新实例状态为失败
+                // 更新实例状态为失败
+                winterJobInstance.setEndTime(new Date());
+                winterJobInstance.setStatus(WinterJobInstanceStatusEnum.FAILED.name());
+                winterJobInstance.setMessage("WinterSchedulerExecutor tryLock failed");
                 return;
             }
             JobProcessor jobProcessor = winterJobInstance.getJobProcessor();
-            jobProcessor.process(jobContext);
-            // TODO 更新实例状态为完成（需要根据任务类型而定，Simple的直接更新为完成，LongTime、Map、MapReduce的更新为执行中，等待上报状态）
+            JobResult jobResult = jobProcessor.process(jobContext);
+
+            // 更新实例状态为完成，由于是本机执行，所以执行到此处则一定是执行结束了，和C/S架构不同。
+            if (jobResult != null && !jobResult.isSuccess()) {
+                winterJobInstance.setEndTime(new Date());
+                winterJobInstance.setStatus(WinterJobInstanceStatusEnum.FAILED.name());
+                winterJobInstance.setMessage(jobResult.getMessage());
+            } else {
+                winterJobInstance.setEndTime(new Date());
+                winterJobInstance.setStatus(WinterJobInstanceStatusEnum.SUCCEED.name());
+                winterJobInstance.setMessage("");
+            }
         }
     }
 }

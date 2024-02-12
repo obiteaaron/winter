@@ -5,5 +5,5 @@ package tech.obiteaaron.winter.embed.schedulercenter;
  */
 public interface SimpleJobProcessor extends JobProcessor {
     @Override
-    void doProcess(JobContext jobContext);
+    JobResult doProcess(JobContext jobContext);
 }

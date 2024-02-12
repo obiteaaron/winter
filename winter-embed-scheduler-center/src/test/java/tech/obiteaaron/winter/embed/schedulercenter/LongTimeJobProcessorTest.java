@@ -13,8 +13,9 @@ public class LongTimeJobProcessorTest implements LongTimeJobProcessor {
     private int sleepMillisecond = 10_000;
 
     @Override
-    public void doProcessOnce(JobContext jobContext) {
+    public JobResult doProcessOnce(JobContext jobContext) {
         log.info("LongTimeJobProcessorTest process " + System.currentTimeMillis());
+        return JobResult.success();
     }
 
     @Override

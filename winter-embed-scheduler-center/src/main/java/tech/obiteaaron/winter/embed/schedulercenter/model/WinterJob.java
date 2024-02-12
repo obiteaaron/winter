@@ -41,7 +41,7 @@ public class WinterJob {
     private String jobType;
 
     /**
-     * @see TimeTypeEnum
+     * @see WinterJobTimeTypeEnum
      */
     private String timeType;
     /**

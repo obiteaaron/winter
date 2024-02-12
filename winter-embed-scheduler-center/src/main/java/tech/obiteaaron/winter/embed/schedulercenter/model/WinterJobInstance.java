@@ -25,6 +25,14 @@ public class WinterJobInstance {
      */
     private Date endTime;
     /**
+     * 实例状态
+     */
+    private String status;
+    /**
+     * 实例结果信息
+     */
+    private String message;
+    /**
      * 实际执行的类名
      */
     private String className;

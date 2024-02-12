@@ -9,7 +9,8 @@ import org.springframework.stereotype.Component;
 public class SimpleJobProcessor2Test implements SimpleJobProcessor {
 
     @Override
-    public void doProcess(JobContext jobContext) {
+    public JobResult doProcess(JobContext jobContext) {
         log.info("SimpleJobProcessor2Test process " + System.currentTimeMillis());
+        return JobResult.success();
     }
 }

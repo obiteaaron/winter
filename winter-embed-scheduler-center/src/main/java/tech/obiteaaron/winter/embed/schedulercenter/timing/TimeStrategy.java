@@ -2,8 +2,8 @@ package tech.obiteaaron.winter.embed.schedulercenter.timing;
 
 import org.apache.commons.lang3.StringUtils;
 import tech.obiteaaron.winter.embed.schedulercenter.JobProcessor;
-import tech.obiteaaron.winter.embed.schedulercenter.model.TimeTypeEnum;
 import tech.obiteaaron.winter.embed.schedulercenter.model.WinterJob;
+import tech.obiteaaron.winter.embed.schedulercenter.model.WinterJobTimeTypeEnum;
 import tech.obiteaaron.winter.embed.schedulercenter.timing.strategy.CronTimeStrategyImpl;
 import tech.obiteaaron.winter.embed.schedulercenter.timing.strategy.FixedDelayTimeStrategyImpl;
 import tech.obiteaaron.winter.embed.schedulercenter.timing.strategy.FixedRateTimeStrategyImpl;
@@ -28,13 +28,13 @@ public interface TimeStrategy {
 
     static TimeStrategy resolveTimeStrategy(String timeType) {
         Objects.requireNonNull(timeType, "timeType cannot be null");
-        if (StringUtils.equals(timeType, TimeTypeEnum.FIXED_DELAY.name())) {
+        if (StringUtils.equals(timeType, WinterJobTimeTypeEnum.FIXED_DELAY.name())) {
             return new FixedDelayTimeStrategyImpl();
         }
-        if (StringUtils.equals(timeType, TimeTypeEnum.FIXED_RATE.name())) {
+        if (StringUtils.equals(timeType, WinterJobTimeTypeEnum.FIXED_RATE.name())) {
             return new FixedRateTimeStrategyImpl();
         }
-        if (StringUtils.equals(timeType, TimeTypeEnum.CRON.name())) {
+        if (StringUtils.equals(timeType, WinterJobTimeTypeEnum.CRON.name())) {
             return new CronTimeStrategyImpl();
         }
         throw new UnsupportedOperationException("timeType resolveTimeStrategy failed " + timeType);

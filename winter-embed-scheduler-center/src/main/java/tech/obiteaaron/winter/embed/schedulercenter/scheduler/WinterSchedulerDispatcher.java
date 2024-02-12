@@ -12,7 +12,8 @@ import tech.obiteaaron.winter.embed.schedulercenter.WinterSchedulerCenter;
 import tech.obiteaaron.winter.embed.schedulercenter.executor.BeanParser;
 import tech.obiteaaron.winter.embed.schedulercenter.model.WinterJob;
 import tech.obiteaaron.winter.embed.schedulercenter.model.WinterJobInstance;
-import tech.obiteaaron.winter.embed.schedulercenter.model.WinterJonStatusEnum;
+import tech.obiteaaron.winter.embed.schedulercenter.model.WinterJobInstanceStatusEnum;
+import tech.obiteaaron.winter.embed.schedulercenter.model.WinterJobStatusEnum;
 import tech.obiteaaron.winter.embed.schedulercenter.powerjob.timewheel.holder.InstanceTimeWheelService;
 import tech.obiteaaron.winter.embed.schedulercenter.repository.WinterJobInstanceRepository;
 import tech.obiteaaron.winter.embed.schedulercenter.repository.WinterJobInstanceTaskRepository;
@@ -106,7 +107,23 @@ public class WinterSchedulerDispatcher {
                 jobContext.setManualParams(manualParams);
                 jobContext.setTaskType(JobContext.TaskTypeEnum.NORMAL.name());
 
+                winterJobInstance.setBeginTime(new Date());
+                winterJobInstance.setStatus(WinterJobInstanceStatusEnum.RUNNING.name());
+                // 保存实例的执行结果
+                boolean save1 = winterJobInstanceRepository.save(winterJobInstance);
+                if (!save1) {
+                    log.error("WinterScheduler WinterSchedulerExecutor processWinterJob instance running saved failed winterInstanceJob = {}", JsonUtil.toJsonString(winterJobInstance));
+                    return;
+                }
+
+                // 运行
                 winterSchedulerCenter.getWinterSchedulerExecutor().run(winterJob, winterJobInstance, jobContext);
+                // 保存实例的执行结果
+                boolean save2 = winterJobInstanceRepository.save(winterJobInstance);
+                if (!save2) {
+                    log.error("WinterScheduler WinterSchedulerExecutor processWinterJob instance result saved failed winterInstanceJob = {}", JsonUtil.toJsonString(winterJobInstance));
+                    return;
+                }
             });
 
         } catch (Throwable t) {
@@ -121,8 +138,9 @@ public class WinterSchedulerDispatcher {
         instance.setGmtModified(winterJob.getGmtModified());
         instance.setJobId(winterJob.getId());
         instance.setName(winterJob.getName());
-        instance.setBeginTime(winterJob.getBeginTime());
-        instance.setEndTime(winterJob.getEndTime());
+        instance.setBeginTime(null);
+        instance.setEndTime(null);
+        instance.setStatus(WinterJobInstanceStatusEnum.WAITING.name());
         instance.setClassName(winterJob.getClassName());
         instance.setJobProcessor(winterJob.getJobProcessor());
         instance.setPeriodTime(winterJob.getNextTriggerTime());
@@ -138,7 +156,7 @@ public class WinterSchedulerDispatcher {
         winterJob.setNextTriggerTime(nextTriggerTime);
         winterJob.setGmtModified(new Date());
         if (winterJob.getNextTriggerTime() == null) {
-            winterJob.setStatus(WinterJonStatusEnum.STOPPED.name());
+            winterJob.setStatus(WinterJobStatusEnum.STOPPED.name());
         }
         boolean save = winterJobRepository.save(winterJob);
         if (!save) {

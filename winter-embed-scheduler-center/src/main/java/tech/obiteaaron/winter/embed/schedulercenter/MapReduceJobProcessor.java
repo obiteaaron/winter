@@ -9,7 +9,7 @@ import java.util.List;
 public interface MapReduceJobProcessor extends MapJobProcessor {
 
     @Override
-    void doProcessOnce(JobContext jobContext);
+    JobResult doProcessOnce(JobContext jobContext);
 
 
     /**

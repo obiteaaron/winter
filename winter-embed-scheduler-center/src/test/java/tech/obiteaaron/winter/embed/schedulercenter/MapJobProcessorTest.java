@@ -15,7 +15,7 @@ public class MapJobProcessorTest implements MapJobProcessor {
     private int sleepMillisecond = 10_000;
 
     @Override
-    public void doProcessOnce(JobContext jobContext) {
+    public JobResult doProcessOnce(JobContext jobContext) {
         log.info("MapJobProcessorTest process " + System.currentTimeMillis());
 
         if (!jobContext.isMapSubTask()) {
@@ -23,6 +23,7 @@ public class MapJobProcessorTest implements MapJobProcessor {
         } else {
             log.info("MapJobProcessorTest subTask process " + JsonUtil.toJsonString(jobContext.getMapTaskList()));
         }
+        return JobResult.success();
     }
 
     @Override

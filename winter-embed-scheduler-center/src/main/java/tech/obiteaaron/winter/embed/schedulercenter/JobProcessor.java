@@ -5,11 +5,11 @@ package tech.obiteaaron.winter.embed.schedulercenter;
  */
 public interface JobProcessor {
 
-    default void process(JobContext jobContext) {
+    default JobResult process(JobContext jobContext) {
         // 分阶段执行
         try {
             beforeRun(jobContext);
-            doProcess(jobContext);
+            return doProcess(jobContext);
         } finally {
             afterRun(jobContext);
         }
@@ -19,7 +19,7 @@ public interface JobProcessor {
 
     }
 
-    void doProcess(JobContext jobContext);
+    JobResult doProcess(JobContext jobContext);
 
     default void afterRun(JobContext jobContext) {
 
