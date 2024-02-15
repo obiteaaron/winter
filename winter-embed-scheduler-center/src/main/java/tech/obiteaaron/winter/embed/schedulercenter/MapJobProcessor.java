@@ -2,7 +2,7 @@ package tech.obiteaaron.winter.embed.schedulercenter;
 
 import org.jetbrains.annotations.NotNull;
 import tech.obiteaaron.winter.embed.rpc.regesiter.ConsumerConfig;
-import tech.obiteaaron.winter.embed.schedulercenter.exception.WinterSchedulerCenterException;
+import tech.obiteaaron.winter.embed.schedulercenter.exception.WinterSchedulerMapException;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -65,7 +65,7 @@ public interface MapJobProcessor extends LongTimeJobProcessor {
         if (jobResult != null && jobResult.isSuccess()) {
             return jobResult.getTaskResultList();
         } else {
-            throw new WinterSchedulerCenterException("map task dispatch failed: " + Optional.ofNullable(jobResult).map(JobResult::getMessage).orElse("result no message"));
+            throw new WinterSchedulerMapException("map task dispatch failed: " + Optional.ofNullable(jobResult).map(JobResult::getMessage).orElse("result no message"));
         }
     }
 
