@@ -18,6 +18,7 @@ public interface LongTimeJobProcessor extends JobProcessor {
             try {
                 beforeRunOnce(jobContext);
                 jobResult = doProcessOnce(jobContext);
+                doReduce(jobContext, jobResult);
                 // 执行失败则直接返回，执行成功则尝试常驻执行
                 if (jobResult != null && !jobResult.isSuccess()) {
                     return jobResult;
@@ -30,8 +31,13 @@ public interface LongTimeJobProcessor extends JobProcessor {
         return jobResult;
     }
 
-    default void beforeRunOnce(JobContext jobContext) {
+    /**
+     * 为MapReduce任务留下的扩展
+     */
+    default void doReduce(JobContext jobContext, JobResult jobResult) {
+    }
 
+    default void beforeRunOnce(JobContext jobContext) {
     }
 
     JobResult doProcessOnce(JobContext jobContext);
@@ -41,7 +47,6 @@ public interface LongTimeJobProcessor extends JobProcessor {
     }
 
     default void afterRunOnce(JobContext jobContext) {
-
     }
 
     default boolean sleepOnce(JobContext jobContext) {

@@ -2,6 +2,7 @@ package tech.obiteaaron.winter.embed.schedulercenter;
 
 import org.jetbrains.annotations.NotNull;
 import tech.obiteaaron.winter.embed.rpc.regesiter.ConsumerConfig;
+import tech.obiteaaron.winter.embed.schedulercenter.exception.WinterSchedulerCenterException;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -31,8 +32,9 @@ public interface MapJobProcessor extends LongTimeJobProcessor {
      * 分发子任务
      *
      * @param taskInfoList 子任务列表，用字符串表示，可以自行拼装
+     * @return taskResultList 执行结果，用字符串表示，可以自行拼装。对于多层派发的场景，需要在父层级派发的返回结果中聚合子层级的结果。
      */
-    default void map(JobContext jobContext, List<String> taskInfoList) {
+    default List<String> map(JobContext jobContext, List<String> taskInfoList) {
         Method processMethod = findTheProcessMethod();
         JobContext jobContextSub = new JobContext();
         jobContextSub.setJobId(jobContext.getJobId());
@@ -42,28 +44,28 @@ public interface MapJobProcessor extends LongTimeJobProcessor {
         jobContextSub.setMapTaskList(taskInfoList);
         jobContextSub.setTaskType(JobContext.TaskTypeEnum.MAP_SUB_TASK.name());
 
+        JobResult jobResult = null;
         boolean enableMapJobClusterRpc = WinterSchedulerCenter.INSTANCE.getWinterSchedulerCenterConfig().isEnableMapJobClusterRpc();
         if (!enableMapJobClusterRpc) {
             // 如果RPC开关关闭，则直接本地调用（注意栈深度）
-            process(jobContextSub);
-            return;
-        }
-
-        ConsumerConfig consumerConfig = ConsumerConfig.builder()
-                .interfaceName(this.getClass().getName())
-                .version("1.0.0")
-                .group("WinterScheduler")
-                .tags(null)
-                .build();
-        // Map在此处只管分发，不管结果，分发成功即可。如果需要结果，可以使用Reduce任务。
-        // 注意：Map任务分发最好到最细粒度，Map任务分发是同步执行返回结果，执行时请不要阻塞太久，避免RPC线程整体阻塞导致性能下降。
-        Object dispatchResult = WinterSchedulerCenter.INSTANCE.getWinterRpcBootstrap().getConsumerDispatcher().dispatch(null, processMethod, new Object[]{jobContextSub}, consumerConfig);
-
-        JobResult jobResult = (JobResult) dispatchResult;
-        if (jobResult != null && jobResult.isSuccess()) {
-            return;
+            jobResult = process(jobContextSub);
         } else {
-            throw new RuntimeException("map task dispatch failed: " + Optional.ofNullable(jobResult).map(JobResult::getMessage).orElse("result no message"));
+            // RPC分发到集群的其他机器上
+            ConsumerConfig consumerConfig = ConsumerConfig.builder()
+                    .interfaceName(this.getClass().getName())
+                    .version("1.0.0")
+                    .group("WinterScheduler")
+                    .tags(null)
+                    .build();
+            // Map在此处只管分发，不管结果，分发成功即可。如果需要结果，可以使用Reduce任务。
+            // 注意：Map任务分发最好到最细粒度，Map任务分发是同步执行返回结果，执行时请不要阻塞太久，避免RPC线程整体阻塞导致性能下降。
+            Object dispatchResult = WinterSchedulerCenter.INSTANCE.getWinterRpcBootstrap().getConsumerDispatcher().dispatch(null, processMethod, new Object[]{jobContextSub}, consumerConfig);
+            jobResult = (JobResult) dispatchResult;
+        }
+        if (jobResult != null && jobResult.isSuccess()) {
+            return jobResult.getTaskResultList();
+        } else {
+            throw new WinterSchedulerCenterException("map task dispatch failed: " + Optional.ofNullable(jobResult).map(JobResult::getMessage).orElse("result no message"));
         }
     }
 
