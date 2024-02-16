@@ -8,6 +8,7 @@ import tech.obiteaaron.winter.configcenter.Config;
 import tech.obiteaaron.winter.configcenter.ConfigCenter;
 import tech.obiteaaron.winter.configcenter.ConfigManager;
 import tech.obiteaaron.winter.embed.registercenter.NotifyListener;
+import tech.obiteaaron.winter.embed.registercenter.RegisterCenterConfig;
 import tech.obiteaaron.winter.embed.registercenter.RegisterService;
 import tech.obiteaaron.winter.embed.registercenter.model.URL;
 
@@ -21,9 +22,12 @@ public class DefaultRegisterServiceImpl implements RegisterService {
 
     ConfigManager configManager;
 
-    public DefaultRegisterServiceImpl(ConfigManager configManager) {
+    RegisterCenterConfig registerCenterConfig;
+
+    public DefaultRegisterServiceImpl(ConfigManager configManager, RegisterCenterConfig registerCenterConfig) {
         this.configManager = configManager;
-        DefaultRegisterWatchDog.INSTANCE.start(configManager);
+        this.registerCenterConfig = registerCenterConfig;
+        DefaultRegisterWatchDog.INSTANCE.start(configManager, registerCenterConfig);
     }
 
     @Override
@@ -123,9 +127,10 @@ public class DefaultRegisterServiceImpl implements RegisterService {
     public List<URL> lookup(URL url) {
         String name = parseNameQuery(url);
         String group = parseGroup(url);
+        int providerHeartbeatTimeoutMilliSecond = registerCenterConfig.parseProviderHeartbeatTimeoutMilliSecond();
 
-        // 心跳3秒内的算有效
-        long validProviderTime = System.currentTimeMillis() - 3000;
+        // 心跳x秒内的算有效
+        long validProviderTime = System.currentTimeMillis() - providerHeartbeatTimeoutMilliSecond;
         // 直接从本地查，本地拥有全量数据
         List<Config> allConfigs = ConfigCenter.getAllConfigs();
         List<URL> collect = allConfigs.stream()

@@ -9,6 +9,7 @@ import tech.obiteaaron.winter.common.tools.threadpool.ThreadUtils;
 import tech.obiteaaron.winter.configcenter.Config;
 import tech.obiteaaron.winter.configcenter.ConfigCenter;
 import tech.obiteaaron.winter.configcenter.ConfigManager;
+import tech.obiteaaron.winter.embed.registercenter.RegisterCenterConfig;
 
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -30,18 +31,18 @@ public class DefaultRegisterWatchDog {
 
     private static ConfigManager configManager;
 
-    void start(ConfigManager configManager) {
+    void start(ConfigManager configManager, RegisterCenterConfig registerCenterConfig) {
         if (!ATOMIC_BOOLEAN.compareAndSet(false, true)) {
             return;
         }
         DefaultRegisterWatchDog.configManager = configManager;
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
         ThreadUtils.registerForShutdown(scheduledExecutorService);
-        scheduledExecutorService.scheduleAtFixedRate(this::doWatchDog, 30, 30, TimeUnit.SECONDS);
+        scheduledExecutorService.scheduleAtFixedRate(() -> doWatchDog(registerCenterConfig), 60, 60, TimeUnit.SECONDS);
         log.info("DefaultRegisterWatchDog started");
     }
 
-    private void doWatchDog() {
+    private void doWatchDog(RegisterCenterConfig registerCenterConfig) {
         if (!SystemStatus.running) {
             return;
         }
@@ -50,15 +51,15 @@ public class DefaultRegisterWatchDog {
                 // 加锁失败则直接跳出，等待下次重调。只由一个主节点操作，其他节点不操作。
                 return;
             }
-            doWatchDog0();
+            doWatchDog0(registerCenterConfig);
         } catch (Throwable t) {
             log.error("DefaultRegisterWatchDog Exception", t);
         }
     }
 
-    private void doWatchDog0() {
-        // 超过30秒没心跳的才删除，避免网络延迟导致心跳没上报上来
-        long validProviderTime = System.currentTimeMillis() - 30_000;
+    private void doWatchDog0(RegisterCenterConfig registerCenterConfig) {
+        // 超过10倍心跳时间的情况下才删除，避免网络延迟导致心跳没上报上来，也给providerHeartbeatTimeoutMilliSecond配置项留足一些可配置空间
+        long validProviderTime = System.currentTimeMillis() - registerCenterConfig.parseProviderHeartbeatTimeoutMilliSecond() * 10L;
         // 直接从本地查，本地拥有全量数据
         List<Config> allConfigs = ConfigCenter.getAllConfigs();
         List<Config> invalidUrls = allConfigs.stream()
