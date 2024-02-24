@@ -2,6 +2,7 @@ package tech.obiteaaron.winter.configcenter.spring;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -19,6 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -59,10 +61,14 @@ public class ConfigCenterSpringInit implements ApplicationContextAware, SmartApp
         }
         List<Object> beans = Arrays.stream(applicationContext.getBeanDefinitionNames()).map(item -> applicationContext.getBean(item)).collect(Collectors.toList());
 
-        DataSource dataSource = findDatasourceBean();
-        ConfigDatabaseRepository configDatabaseRepository = new ConfigDatabaseRepositoryMysqlImpl();
-        configDatabaseRepository.setDataSource(dataSource);
-        // 给管理类赋值
+        // 可以自己定义存储资源层实现
+        ConfigDatabaseRepository configDatabaseRepository = getBeanPrimary(ConfigDatabaseRepository.class, () -> {
+            DataSource dataSource = findDatasourceBean();
+            ConfigDatabaseRepository configDatabaseRepositoryMysql = new ConfigDatabaseRepositoryMysqlImpl();
+            configDatabaseRepositoryMysql.setDataSource(dataSource);
+            return configDatabaseRepositoryMysql;
+        });
+        // 给管理接口赋值资源层实现
         applicationContext.getBean(ConfigManagerService.class).setConfigDatabaseRepository(configDatabaseRepository);
         // 初始化并启动
         ConfigCenterInner.initAndStart(beans, configDatabaseRepository);
@@ -78,6 +84,14 @@ public class ConfigCenterSpringInit implements ApplicationContextAware, SmartApp
                 return dataSource;
             }
             return beansOfType.values().iterator().next();
+        }
+    }
+
+    private <T> T getBeanPrimary(Class<T> clazz, Supplier<T> supplier) {
+        try {
+            return applicationContext.getBean(clazz);
+        } catch (NoSuchBeanDefinitionException ignore) {
+            return supplier.get();
         }
     }
 }
