@@ -6,7 +6,7 @@ import org.springframework.util.Assert;
 import tech.obiteaaron.winter.common.tools.json.JsonUtils;
 import tech.obiteaaron.winter.configcenter.Config;
 import tech.obiteaaron.winter.configcenter.ConfigCenter;
-import tech.obiteaaron.winter.configcenter.ConfigManager;
+import tech.obiteaaron.winter.configcenter.service.ConfigManagerService;
 import tech.obiteaaron.winter.embed.registercenter.NotifyListener;
 import tech.obiteaaron.winter.embed.registercenter.RegisterCenterConfig;
 import tech.obiteaaron.winter.embed.registercenter.RegisterService;
@@ -20,14 +20,14 @@ import java.util.stream.Collectors;
 @Slf4j
 public class DefaultRegisterServiceImpl implements RegisterService {
 
-    ConfigManager configManager;
+    ConfigManagerService configManagerService;
 
     RegisterCenterConfig registerCenterConfig;
 
-    public DefaultRegisterServiceImpl(ConfigManager configManager, RegisterCenterConfig registerCenterConfig) {
-        this.configManager = configManager;
+    public DefaultRegisterServiceImpl(ConfigManagerService configManagerService, RegisterCenterConfig registerCenterConfig) {
+        this.configManagerService = configManagerService;
         this.registerCenterConfig = registerCenterConfig;
-        DefaultRegisterWatchDog.INSTANCE.start(configManager, registerCenterConfig);
+        DefaultRegisterWatchDog.INSTANCE.start(configManagerService, registerCenterConfig);
     }
 
     @Override
@@ -39,21 +39,21 @@ public class DefaultRegisterServiceImpl implements RegisterService {
         Config configQuery = new Config();
         configQuery.setName(name);
         configQuery.setGroupName(group);
-        List<Config> queryResult = configManager.query(configQuery);
+        List<Config> queryResult = configManagerService.query(configQuery);
         if (!queryResult.isEmpty() && queryResult.get(0) != null) {
             Config configOld = queryResult.get(0);
             if (configOld != null) {
                 // update gmtModified
                 configOld.setDescription(null);
                 configOld.setContent(content);
-                int modify = configManager.modify(configOld);
+                int modify = configManagerService.modify(configOld);
                 Assert.isTrue(modify == 1, "register service failed");
                 return;
             }
         }
         // create
         configQuery.setContent(content);
-        int create = configManager.create(configQuery);
+        int create = configManagerService.create(configQuery);
         Assert.isTrue(create == 1, "register service failed");
     }
 
@@ -105,7 +105,7 @@ public class DefaultRegisterServiceImpl implements RegisterService {
 
     void doUnregister(List<Config> configs) {
         for (Config invalidUrl : configs) {
-            int delete = configManager.delete(invalidUrl);
+            int delete = configManagerService.delete(invalidUrl);
             if (delete != 1) {
                 log.warn("DefaultRegisterServiceImpl delete result invalid id={}, name={}, groupName={}, result={}", invalidUrl.getId(), invalidUrl.getName(), invalidUrl.getGroupName(), delete);
             }

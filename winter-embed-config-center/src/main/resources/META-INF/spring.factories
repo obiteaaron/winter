@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  tech.obiteaaron.winter.configcenter.ConfigCenterSpringAutoConfiguration
+  tech.obiteaaron.winter.configcenter.spring.ConfigCenterSpringAutoConfiguration

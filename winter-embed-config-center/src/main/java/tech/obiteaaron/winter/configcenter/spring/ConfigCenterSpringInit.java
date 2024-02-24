@@ -1,4 +1,4 @@
-package tech.obiteaaron.winter.configcenter;
+package tech.obiteaaron.winter.configcenter.spring;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
@@ -9,6 +9,10 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.SmartApplicationListener;
 import org.springframework.core.Ordered;
+import tech.obiteaaron.winter.configcenter.repository.ConfigDatabaseRepository;
+import tech.obiteaaron.winter.configcenter.repository.impl.ConfigDatabaseRepositoryMysqlImpl;
+import tech.obiteaaron.winter.configcenter.scheduler.ConfigCenterInner;
+import tech.obiteaaron.winter.configcenter.service.ConfigManagerService;
 
 import javax.sql.DataSource;
 import java.util.Arrays;
@@ -56,10 +60,10 @@ public class ConfigCenterSpringInit implements ApplicationContextAware, SmartApp
         List<Object> beans = Arrays.stream(applicationContext.getBeanDefinitionNames()).map(item -> applicationContext.getBean(item)).collect(Collectors.toList());
 
         DataSource dataSource = findDatasourceBean();
-        ConfigDatabaseRepository configDatabaseRepository = new ConfigDatabaseRepository();
+        ConfigDatabaseRepository configDatabaseRepository = new ConfigDatabaseRepositoryMysqlImpl();
         configDatabaseRepository.setDataSource(dataSource);
         // 给管理类赋值
-        applicationContext.getBean(ConfigManager.class).setConfigDatabaseRepository(configDatabaseRepository);
+        applicationContext.getBean(ConfigManagerService.class).setConfigDatabaseRepository(configDatabaseRepository);
         // 初始化并启动
         ConfigCenterInner.initAndStart(beans, configDatabaseRepository);
     }

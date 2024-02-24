@@ -1,7 +1,9 @@
-package tech.obiteaaron.winter.configcenter;
+package tech.obiteaaron.winter.configcenter.spring;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import tech.obiteaaron.winter.configcenter.service.ConfigManagerService;
+import tech.obiteaaron.winter.configcenter.service.impl.ConfigManagerServiceImpl;
 
 @Configuration
 public class ConfigCenterSpringAutoConfiguration {
@@ -12,7 +14,7 @@ public class ConfigCenterSpringAutoConfiguration {
     }
 
     @Bean
-    public ConfigManager configManager() {
-        return new ConfigManager();
+    public ConfigManagerService configManagerService() {
+        return new ConfigManagerServiceImpl();
     }
 }

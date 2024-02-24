@@ -1,10 +1,14 @@
-package tech.obiteaaron.winter.configcenter;
+package tech.obiteaaron.winter.configcenter.scheduler;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListValuedMap;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.ReflectionUtils;
+import tech.obiteaaron.winter.configcenter.Config;
+import tech.obiteaaron.winter.configcenter.ConfigCenter;
+import tech.obiteaaron.winter.configcenter.ConfigValue;
+import tech.obiteaaron.winter.configcenter.repository.ConfigDatabaseRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +21,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
-final class ConfigCenterInner {
+public final class ConfigCenterInner {
     /**
      * 内存中缓存所有配置项
      */
@@ -32,7 +36,7 @@ final class ConfigCenterInner {
      */
     private static final ThreadPoolExecutor INIT_THREAD_POOL = new ThreadPoolExecutor(0, 1, 1, TimeUnit.MINUTES, new ArrayBlockingQueue<>(10000));
 
-    static List<Config> getAllConfigs() {
+    public static List<Config> getAllConfigs() {
         return allConfigs;
     }
 
@@ -43,7 +47,7 @@ final class ConfigCenterInner {
      * @param name     名字
      * @param function 监听函数
      */
-    synchronized static void registerListener(String group, String name, Function<Config, Integer> function) {
+    public synchronized static void registerListener(String group, String name, Function<Config, Integer> function) {
         if (StringUtils.isAnyBlank(name, group) || function == null) {
             return;
         }
@@ -57,7 +61,7 @@ final class ConfigCenterInner {
      *
      * @param beans 类实例
      */
-    static void initAndStart(List<Object> beans, ConfigDatabaseRepository configDatabaseRepository) {
+    public static void initAndStart(List<Object> beans, ConfigDatabaseRepository configDatabaseRepository) {
         initConfigFromBeans(beans, configDatabaseRepository);
         start(configDatabaseRepository);
     }
@@ -67,7 +71,7 @@ final class ConfigCenterInner {
      *
      * @param beans 类实例
      */
-    static void initConfigFromBeans(List<Object> beans, ConfigDatabaseRepository configDatabaseRepository) {
+    public static void initConfigFromBeans(List<Object> beans, ConfigDatabaseRepository configDatabaseRepository) {
         if (beans == null || beans.isEmpty()) {
             return;
         }
@@ -145,7 +149,7 @@ final class ConfigCenterInner {
     /**
      * 启动配置中心，开始自动拉取配置
      */
-    static void start(ConfigDatabaseRepository configDatabaseRepository) {
+    public static void start(ConfigDatabaseRepository configDatabaseRepository) {
         log.info("ConfigCenter starting...");
         ConfigCenterPullTask configCenterPullTask = new ConfigCenterPullTask();
         configCenterPullTask.setConfigDatabaseRepository(configDatabaseRepository);

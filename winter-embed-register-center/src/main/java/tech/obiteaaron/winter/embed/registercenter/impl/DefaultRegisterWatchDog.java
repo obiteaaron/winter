@@ -8,7 +8,7 @@ import tech.obiteaaron.winter.common.tools.system.SystemStatus;
 import tech.obiteaaron.winter.common.tools.threadpool.ThreadUtils;
 import tech.obiteaaron.winter.configcenter.Config;
 import tech.obiteaaron.winter.configcenter.ConfigCenter;
-import tech.obiteaaron.winter.configcenter.ConfigManager;
+import tech.obiteaaron.winter.configcenter.service.ConfigManagerService;
 import tech.obiteaaron.winter.embed.registercenter.RegisterCenterConfig;
 
 import java.util.List;
@@ -29,13 +29,13 @@ public class DefaultRegisterWatchDog {
 
     private static final AtomicBoolean ATOMIC_BOOLEAN = new AtomicBoolean();
 
-    private static ConfigManager configManager;
+    private static ConfigManagerService configManagerService;
 
-    void start(ConfigManager configManager, RegisterCenterConfig registerCenterConfig) {
+    void start(ConfigManagerService configManagerService, RegisterCenterConfig registerCenterConfig) {
         if (!ATOMIC_BOOLEAN.compareAndSet(false, true)) {
             return;
         }
-        DefaultRegisterWatchDog.configManager = configManager;
+        DefaultRegisterWatchDog.configManagerService = configManagerService;
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
         ThreadUtils.registerForShutdown(scheduledExecutorService);
         scheduledExecutorService.scheduleAtFixedRate(() -> doWatchDog(registerCenterConfig), 60, 60, TimeUnit.SECONDS);
@@ -68,7 +68,7 @@ public class DefaultRegisterWatchDog {
                 .filter(item -> item.getGmtModified() == null || item.getGmtModified().getTime() < validProviderTime)
                 .collect(Collectors.toList());
         for (Config invalidUrl : invalidUrls) {
-            int delete = configManager.delete(invalidUrl);
+            int delete = configManagerService.delete(invalidUrl);
             if (delete != 1) {
                 log.warn("DefaultRegisterWatchDog delete result invalid id={}, name={}, groupName={}, result={}", invalidUrl.getId(), invalidUrl.getName(), invalidUrl.getGroupName(), delete);
             }
