@@ -31,8 +31,8 @@ public class ProviderDispatcherImpl implements ProviderDispatcher {
             String sourceIp = httpServerRequest.getParam("sourceIp");
             URL url = URL.builder()
                     .protocol(httpServerRequest.scheme())
-                    .ip(httpServerRequest.host())
-                    .port(0)
+                    .ip(httpServerRequest.authority().host())
+                    .port(httpServerRequest.authority().port())
                     .path(httpServerRequest.path().substring(1))
                     .parameterMap(URL.getParameterMap(httpServerRequest.query()))
                     .build();

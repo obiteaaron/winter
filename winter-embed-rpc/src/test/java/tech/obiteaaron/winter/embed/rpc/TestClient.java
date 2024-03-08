@@ -14,7 +14,7 @@ public class TestClient {
 
     @Autowired
     @Qualifier("tech.obiteaaron.winter.embed.rpc.TestService:Consumer")
-    @WinterConsumer
+    @WinterConsumer(async = true, timeout = 0)
     private TestService testService;
 
     @Autowired

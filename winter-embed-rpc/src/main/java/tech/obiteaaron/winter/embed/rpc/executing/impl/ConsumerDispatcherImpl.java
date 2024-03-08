@@ -6,12 +6,15 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import tech.obiteaaron.winter.common.tools.http.CommonOkHttpClient;
+import tech.obiteaaron.winter.common.tools.id.UuidGenerator;
 import tech.obiteaaron.winter.common.tools.trace.Slf4jMdcUtils;
 import tech.obiteaaron.winter.embed.registercenter.model.URL;
 import tech.obiteaaron.winter.embed.rpc.WinterRpcBootstrap;
+import tech.obiteaaron.winter.embed.rpc.async.AsyncActionEnum;
 import tech.obiteaaron.winter.embed.rpc.constant.InvokerStage;
 import tech.obiteaaron.winter.embed.rpc.constant.MethodUtil;
 import tech.obiteaaron.winter.embed.rpc.executing.ConsumerDispatcher;
+import tech.obiteaaron.winter.embed.rpc.executing.InnerInvokeContext;
 import tech.obiteaaron.winter.embed.rpc.executing.InvokeContext;
 import tech.obiteaaron.winter.embed.rpc.filter.chain.FilterChainImpl;
 import tech.obiteaaron.winter.embed.rpc.regesiter.ConsumerConfig;
@@ -22,6 +25,7 @@ import tech.obiteaaron.winter.embed.rpc.serializer.WinterSerializer;
 
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.function.Function;
 
 public class ConsumerDispatcherImpl implements ConsumerDispatcher {
 
@@ -39,12 +43,19 @@ public class ConsumerDispatcherImpl implements ConsumerDispatcher {
         URL providerUrl = resolveRouterUrl(consumerConfig, providerList);
 
         // 构造 InvokeContext
-        InvokeContext invokeContext = new InvokeContext();
-        invokeContext.setServiceName(consumerConfig.getInterfaceName());
-        invokeContext.setMethodSignature(MethodUtil.generateMethodSignature(method));
-        invokeContext.setArguments(args);
-        invokeContext.setTraceId(Slf4jMdcUtils.getTraceId());
-        invokeContext.setApplicationName(winterRpcBootstrap.getApplicationName());
+        InnerInvokeContext innerInvokeContext = new InnerInvokeContext();
+        innerInvokeContext.setServiceName(consumerConfig.getInterfaceName());
+        innerInvokeContext.setMethodSignature(MethodUtil.generateMethodSignature(method));
+        innerInvokeContext.setArguments(args);
+        innerInvokeContext.setTraceId(Slf4jMdcUtils.getTraceId());
+        innerInvokeContext.setApplicationName(winterRpcBootstrap.getApplicationName());
+
+        innerInvokeContext.setAsyncRequestId(generatorAsyncRequestId(consumerConfig));
+        innerInvokeContext.setAsyncAction(AsyncActionEnum.EXECUTE.name());
+        innerInvokeContext.setSyncTimeout(consumerConfig.getSyncTimeout());
+
+        innerInvokeContext.setProviderUrl(providerUrl);
+        innerInvokeContext.setConsumerConfig(consumerConfig);
 
         // 构造调用链
         FilterChainImpl filterChain = new FilterChainImpl();
@@ -54,17 +65,27 @@ public class ConsumerDispatcherImpl implements ConsumerDispatcher {
             String serializerSupports = providerUrl.getParameterMap().get("serializerSupports");
             String serializerType = WinterSerializeFactory.resolveSerializerType(serializerSupports, winterRpcBootstrap.getConsumerSerializerSupports(), winterRpcBootstrap.getSerializerType());
             WinterSerializer winterSerializer = WinterSerializeFactory.getWinterSerializer(serializerType);
-            invokeContext.setSerializerType(serializerType);
-            String serializedContext = winterSerializer.serializer(invokeContext);
+            innerInvokeContext.setWinterSerializer(winterSerializer);
+            innerInvokeContext.setSerializerType(serializerType);
+            InvokeContext executeInvokeContext = innerInvokeContext.toExecuteInvokeContext();
+            String serializedContext = winterSerializer.serializer(executeInvokeContext);
+            innerInvokeContext.setSerializedContext(serializedContext);
             // 调用远程服务
-            String result = doInvoke(invokeContext, providerUrl, serializedContext);
-            invokeContext.setResult(result);
+            String result = doInvokeAsyncIfNecessary(innerInvokeContext);
+            innerInvokeContext.setResult(result);
         }));
 
-        filterChain.invoke(InvokerStage.CONSUMER.name(), providerUrl, invokeContext);
+        filterChain.invoke(InvokerStage.CONSUMER.name(), providerUrl, innerInvokeContext);
 
         // 反序列化，是否应该放在RealInvokeFilter里面？
-        return deserializer(method, invokeContext.getSerializerType(), (String) invokeContext.getResult());
+        return deserializer(method, innerInvokeContext.getSerializerType(), (String) innerInvokeContext.getResult());
+    }
+
+    private String generatorAsyncRequestId(ConsumerConfig consumerConfig) {
+        if (!consumerConfig.isAsync()) {
+            return null;
+        }
+        return UuidGenerator.generate();
     }
 
     /**
@@ -85,8 +106,9 @@ public class ConsumerDispatcherImpl implements ConsumerDispatcher {
         return providerListResolve.get(0);
     }
 
-    String doInvoke(InvokeContext invokeContext, URL providerUrl, String serializedContext) {
+    String doInvokeAsyncIfNecessary(InnerInvokeContext innerInvokeContext) {
         // 用服务提供者的IP或者负载均衡服务器的IP
+        URL providerUrl = innerInvokeContext.getProviderUrl();
         String ip = StringUtils.firstNonBlank(providerUrl.getParameterMap().get("loadBalanceServer"), providerUrl.getIp());
         // 如果有负载均衡服务器，可以直接将Provider的地址覆盖掉，这一段可以直接被覆盖掉，这是为了内网访问的，如果有负载均衡代理，可以直接替代为负载均衡的IP地址
         URL url = URL.builder()
@@ -95,15 +117,21 @@ public class ConsumerDispatcherImpl implements ConsumerDispatcher {
                 .port(providerUrl.getPort())
                 .path(providerUrl.getPath())
                 .parameterMap(ImmutableMap.of(
-                        "methodSignature", invokeContext.getMethodSignature(),
-                        "serializerType", invokeContext.getSerializerType()
+                        "methodSignature", innerInvokeContext.getMethodSignature(),
+                        "serializerType", innerInvokeContext.getSerializerType()
                 ))
                 .build();
         String invokeUrl = url.toString();
         // okhttp POST调用 vertx的端口
-        // TODO 支持调用后短轮询获取结果，以突破网关、接口的timeout限制
-        String result = commonOkHttpClient.doPost(invokeUrl, serializedContext);
-        return result;
+        // 支持调用后短轮询获取结果，以突破网关、接口的timeout限制
+        ConsumerConfig consumerConfig = innerInvokeContext.getConsumerConfig();
+        String serializedContext = innerInvokeContext.getSerializedContext();
+        if (!consumerConfig.isAsync()) {
+            return commonOkHttpClient.doPost(invokeUrl, serializedContext);
+        } else {
+            Function<String, String> function = (body) -> commonOkHttpClient.doPost(invokeUrl, body);
+            return winterRpcBootstrap.getAsyncHelper().runAsyncForConsumer(innerInvokeContext, function);
+        }
     }
 
     private Object deserializer(Method method, String serializerType, String result) {

@@ -22,4 +22,10 @@ public class ConsumerConfig {
     String version;
 
     String[] tags;
+
+    boolean async;
+
+    int timeout;
+
+    int syncTimeout;
 }

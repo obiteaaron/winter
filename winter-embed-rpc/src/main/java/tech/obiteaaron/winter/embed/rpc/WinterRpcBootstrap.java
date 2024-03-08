@@ -2,6 +2,7 @@ package tech.obiteaaron.winter.embed.rpc;
 
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+import tech.obiteaaron.winter.embed.rpc.async.AsyncHelper;
 import tech.obiteaaron.winter.embed.rpc.constant.IpAddressUtil;
 import tech.obiteaaron.winter.embed.rpc.executing.ConsumerDispatcher;
 import tech.obiteaaron.winter.embed.rpc.executing.ProviderDispatcher;
@@ -62,6 +63,8 @@ public class WinterRpcBootstrap {
     private List<ConsumerConfig> consumerConfigs = new ArrayList<>();
 
     private List<ProviderConfig> providerConfigs = new ArrayList<>();
+
+    private AsyncHelper asyncHelper;
 
     private WinterRpcBootstrap(String name) {
         this.name = name;
@@ -216,6 +219,11 @@ public class WinterRpcBootstrap {
 
     public WinterRpcBootstrap addProviderConfig(ProviderConfig providerConfig) {
         this.providerConfigs.add(Objects.requireNonNull(providerConfig));
+        return this;
+    }
+
+    public WinterRpcBootstrap setAsyncHelper(AsyncHelper asyncHelper) {
+        this.asyncHelper = asyncHelper;
         return this;
     }
 

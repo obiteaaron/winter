@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = TestApplication.class)
-public class TestStart {
+public class TestRpcStart {
 
     @Autowired
     private TestClient testClient;

@@ -36,4 +36,12 @@ public @interface WinterConsumer {
      * @return
      */
     int timeout() default 120;
+
+    /**
+     * 仅在async=true时有效，单位：秒
+     * 同步等待时间，比如你的安全网关是10秒超时，你可以配置为等待1~9秒，这样避免了安全网关超时，也最大限度地用同步地方式调用接口
+     *
+     * @return
+     */
+    int syncTimeout() default 3;
 }

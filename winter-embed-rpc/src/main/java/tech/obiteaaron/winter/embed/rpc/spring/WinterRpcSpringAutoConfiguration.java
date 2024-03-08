@@ -17,6 +17,10 @@ import tech.obiteaaron.winter.common.tools.http.OkHttpClientFactory;
 import tech.obiteaaron.winter.embed.registercenter.RegisterService;
 import tech.obiteaaron.winter.embed.rpc.WinterRpcBootstrap;
 import tech.obiteaaron.winter.embed.rpc.WinterRpcConfig;
+import tech.obiteaaron.winter.embed.rpc.async.AsyncHelper;
+import tech.obiteaaron.winter.embed.rpc.async.AsyncResultDistributeStorage;
+import tech.obiteaaron.winter.embed.rpc.async.DefaultAsyncHelperImpl;
+import tech.obiteaaron.winter.embed.rpc.async.DefaultRedisAsyncResultDistributeStorageImpl;
 import tech.obiteaaron.winter.embed.rpc.executing.ConsumerDispatcher;
 import tech.obiteaaron.winter.embed.rpc.executing.ProviderDispatcher;
 import tech.obiteaaron.winter.embed.rpc.executing.impl.ConsumerDispatcherImpl;
@@ -108,6 +112,11 @@ public class WinterRpcSpringAutoConfiguration implements SmartApplicationListene
 
         // 扩展支持自定义RpcFilter
         Map<String, RpcFilter> rpcFilterMap = applicationContext.getBeansOfType(RpcFilter.class);
+
+        // 增加异步功能的实现
+        AsyncResultDistributeStorage asyncResultDistributeStorage = getBeanPrimary(AsyncResultDistributeStorage.class, DefaultRedisAsyncResultDistributeStorageImpl::new);
+        AsyncHelper asyncHelper = getBeanPrimary(AsyncHelper.class, () -> new DefaultAsyncHelperImpl(asyncResultDistributeStorage));
+
         // 将Spring的配置复制到实例配置里面
         WinterRpcConfig winterRpcConfig = new WinterRpcConfig();
         BeanUtils.copyProperties(winterRpcProperties, winterRpcConfig);
@@ -117,6 +126,7 @@ public class WinterRpcSpringAutoConfiguration implements SmartApplicationListene
                 .setProviderDispatcher(providerDispatcher)
                 .setConsumerDispatcher(consumerDispatcher)
                 .setProviderWatchDog(new ProviderWatchDog())
+                .setAsyncHelper(asyncHelper)
                 .addProviderRouter(providerRouter)
                 .setRpcFilters(new ArrayList<>(rpcFilterMap.values()))
                 .addRpcFilter(new LoggingRpcFilter())
