@@ -87,7 +87,7 @@ public class MutableThreadPoolExecutorFactory {
                 10,
                 TimeUnit.MINUTES,
                 queueSize <= 0 ? new SynchronousQueue<>() : new ArrayBlockingQueue<>(queueSize),
-                Executors.defaultThreadFactory(),
+                new NamedThreadFactory(name),
                 handler);
     }
 
