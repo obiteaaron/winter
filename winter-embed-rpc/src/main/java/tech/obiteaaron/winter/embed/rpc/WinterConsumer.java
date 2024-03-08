@@ -31,17 +31,25 @@ public @interface WinterConsumer {
     boolean async() default false;
 
     /**
-     * 仅在async=true时有效，单位：秒
+     * 仅在async=true时有效，单位：毫秒
      *
      * @return
      */
-    int timeout() default 120;
+    int timeout() default 120_000;
 
     /**
-     * 仅在async=true时有效，单位：秒
-     * 同步等待时间，比如你的安全网关是10秒超时，你可以配置为等待1~9秒，这样避免了安全网关超时，也最大限度地用同步地方式调用接口
+     * 仅在async=true时有效，单位：毫秒
+     * 执行时同步等待时间，比如你的安全网关是10秒超时，你可以配置为等待1~9秒，这样避免了安全网关超时，也最大限度地用同步地方式调用接口
      *
      * @return
      */
-    int syncTimeout() default 3;
+    int executeTimeout() default 3_000;
+
+    /**
+     * 仅在async=true时有效，单位：毫秒
+     * 查询接口间隔时间
+     *
+     * @return
+     */
+    int asyncQueryInterval() default 10;
 }

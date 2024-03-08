@@ -52,7 +52,7 @@ public class ConsumerDispatcherImpl implements ConsumerDispatcher {
 
         innerInvokeContext.setAsyncRequestId(generatorAsyncRequestId(consumerConfig));
         innerInvokeContext.setAsyncAction(AsyncActionEnum.EXECUTE.name());
-        innerInvokeContext.setSyncTimeout(consumerConfig.getSyncTimeout());
+        innerInvokeContext.setExecuteTimeout(consumerConfig.getExecuteTimeout());
 
         innerInvokeContext.setProviderUrl(providerUrl);
         innerInvokeContext.setConsumerConfig(consumerConfig);
@@ -65,11 +65,10 @@ public class ConsumerDispatcherImpl implements ConsumerDispatcher {
             String serializerSupports = providerUrl.getParameterMap().get("serializerSupports");
             String serializerType = WinterSerializeFactory.resolveSerializerType(serializerSupports, winterRpcBootstrap.getConsumerSerializerSupports(), winterRpcBootstrap.getSerializerType());
             WinterSerializer winterSerializer = WinterSerializeFactory.getWinterSerializer(serializerType);
-            innerInvokeContext.setWinterSerializer(winterSerializer);
             innerInvokeContext.setSerializerType(serializerType);
             InvokeContext executeInvokeContext = innerInvokeContext.toExecuteInvokeContext();
             String serializedContext = winterSerializer.serializer(executeInvokeContext);
-            innerInvokeContext.setSerializedContext(serializedContext);
+            innerInvokeContext.setSerializedString(serializedContext);
             // 调用远程服务
             String result = doInvokeAsyncIfNecessary(innerInvokeContext);
             innerInvokeContext.setResult(result);
@@ -125,7 +124,7 @@ public class ConsumerDispatcherImpl implements ConsumerDispatcher {
         // okhttp POST调用 vertx的端口
         // 支持调用后短轮询获取结果，以突破网关、接口的timeout限制
         ConsumerConfig consumerConfig = innerInvokeContext.getConsumerConfig();
-        String serializedContext = innerInvokeContext.getSerializedContext();
+        String serializedContext = innerInvokeContext.getSerializedString();
         if (!consumerConfig.isAsync()) {
             return commonOkHttpClient.doPost(invokeUrl, serializedContext);
         } else {

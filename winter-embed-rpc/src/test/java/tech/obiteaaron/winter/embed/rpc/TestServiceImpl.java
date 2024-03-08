@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Component
@@ -12,6 +13,11 @@ public class TestServiceImpl implements TestService {
 
     @Override
     public User findById(String id) {
+        try {
+            TimeUnit.SECONDS.sleep(30);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         User user = new User();
         user.setId("111");
         return user;

@@ -1,8 +1,11 @@
 package tech.obiteaaron.winter.embed.rpc.async;
 
 import tech.obiteaaron.winter.embed.rpc.executing.InnerInvokeContext;
+import tech.obiteaaron.winter.embed.rpc.executing.InvokeContext;
 
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * 异步工具，主要是解决，如果你的RPC调用，因为不可控的原因，必须经过一个timeout比较低中间链路、安全网关时，如果你的接口超过这个时间就必然失败，
@@ -15,4 +18,8 @@ import java.util.function.Function;
 public interface AsyncHelper {
 
     String runAsyncForConsumer(InnerInvokeContext innerInvokeContext, Function<String, String> function);
+
+    boolean isConsumerNeedAsyncQueryResult(String result);
+
+    Object runAsyncForProvider(InvokeContext invokeContext, ThreadPoolExecutor threadPoolExecutor, Supplier<Object> realInvokeMethod);
 }

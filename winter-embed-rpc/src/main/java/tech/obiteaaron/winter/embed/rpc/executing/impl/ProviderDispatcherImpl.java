@@ -19,11 +19,15 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ThreadPoolExecutor;
 
 public class ProviderDispatcherImpl implements ProviderDispatcher {
 
     @Setter
     WinterRpcBootstrap winterRpcBootstrap;
+
+    @Setter
+    ThreadPoolExecutor threadPoolExecutor;
 
     @Override
     public String dispatch(HttpServerRequest httpServerRequest, String body) {
@@ -51,6 +55,11 @@ public class ProviderDispatcherImpl implements ProviderDispatcher {
 
             filterChain.invoke(InvokerStage.PROVIDER.name(), url, invokeContext);
 
+            // 如果客户端需要查询结果，直接返回该字符串，不需要序列化
+            if (invokeContext.getResult() instanceof String
+                    && winterRpcBootstrap.getAsyncHelper().isConsumerNeedAsyncQueryResult((String) invokeContext.getResult())) {
+                return (String) invokeContext.getResult();
+            }
             // 序列化
             return serialize(invokeContext.getResult(), serializerType);
         } catch (Exception e) {
@@ -90,6 +99,15 @@ public class ProviderDispatcherImpl implements ProviderDispatcher {
     }
 
     private Object doExecute(InvokeContext invokeContext) {
+        if (invokeContext.getAsyncRequestId() == null) {
+            // 没有异步请求ID，则直接走同步逻辑
+            return doExecute0(invokeContext);
+        }
+        // 走异步逻辑
+        return winterRpcBootstrap.getAsyncHelper().runAsyncForProvider(invokeContext, threadPoolExecutor, () -> doExecute0(invokeContext));
+    }
+
+    private Object doExecute0(InvokeContext invokeContext) {
         try {
             String serviceName = Objects.requireNonNull(StringUtils.trimToNull(invokeContext.getServiceName()), "serviceName cannot be null");
             String methodSignature = Objects.requireNonNull(StringUtils.trimToNull(invokeContext.getMethodSignature()), "methodSignature cannot be null");
@@ -100,8 +118,7 @@ public class ProviderDispatcherImpl implements ProviderDispatcher {
 
             Object[] arguments = invokeContext.getArguments();
 
-            Object result = method.invoke(bean, arguments);
-            return result;
+            return method.invoke(bean, arguments);
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
         }

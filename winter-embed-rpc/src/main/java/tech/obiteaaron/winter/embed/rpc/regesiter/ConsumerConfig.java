@@ -27,5 +27,7 @@ public class ConsumerConfig {
 
     int timeout;
 
-    int syncTimeout;
+    int executeTimeout;
+
+    int asyncQueryInterval;
 }

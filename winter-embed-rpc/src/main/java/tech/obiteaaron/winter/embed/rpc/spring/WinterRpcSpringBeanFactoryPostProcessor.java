@@ -89,7 +89,8 @@ public class WinterRpcSpringBeanFactoryPostProcessor implements BeanFactoryPostP
                 .tags(annotation.tags())
                 .async(annotation.async())
                 .timeout(annotation.timeout())
-                .syncTimeout(annotation.syncTimeout())
+                .executeTimeout(annotation.executeTimeout())
+                .asyncQueryInterval(annotation.asyncQueryInterval())
                 .build();
 
         String beanName = generateConsumerBeanName(aClass);

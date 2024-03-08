@@ -14,6 +14,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.SmartApplicationListener;
 import tech.obiteaaron.winter.common.tools.http.CommonOkHttpClient;
 import tech.obiteaaron.winter.common.tools.http.OkHttpClientFactory;
+import tech.obiteaaron.winter.common.tools.threadpool.MutableThreadPoolExecutorFactory;
 import tech.obiteaaron.winter.embed.registercenter.RegisterService;
 import tech.obiteaaron.winter.embed.rpc.WinterRpcBootstrap;
 import tech.obiteaaron.winter.embed.rpc.WinterRpcConfig;
@@ -107,6 +108,7 @@ public class WinterRpcSpringAutoConfiguration implements SmartApplicationListene
         });
         // 扩展支持自定义ProviderDispatcher
         ProviderDispatcher providerDispatcher = getBeanPrimary(ProviderDispatcherImpl.class, ProviderDispatcherImpl::new);
+        providerDispatcher.setThreadPoolExecutor(MutableThreadPoolExecutorFactory.newAbortPool("rpc-provider", winterRpcProperties::getProviderWorkerThreadPoolSize, 0));
         // 扩展支持自定义ProviderRouter
         ProviderRouter providerRouter = getBeanPrimary(ProviderRouter.class, RoundRobinProviderRouterImpl::new);
 

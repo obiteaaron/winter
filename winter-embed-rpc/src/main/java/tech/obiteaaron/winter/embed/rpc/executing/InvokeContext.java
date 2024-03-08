@@ -37,7 +37,7 @@ public class InvokeContext {
      * @see tech.obiteaaron.winter.embed.rpc.async.AsyncActionEnum
      */
     private String asyncAction;
-    private int syncTimeout;
+    private int executeTimeout;
     /**
      * 自定义扩展信息
      */

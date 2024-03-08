@@ -26,9 +26,13 @@ public class WinterRpcProperties {
      */
     private String serializerType = "hessian";
     /**
-     * 提供者线程池数量
+     * 提供者线程池数量（vertx的worker线程数量），在RPC框架中起到分发请求的作用
      */
     private int providerThreadPoolSize = 10;
+    /**
+     * 提供者工作的线程池数量，对应实际执行业务逻辑的线程池数量，Async功能会基于此线程池执行并返回Future进行异步等待
+     */
+    private int providerWorkerThreadPoolSize = 50;
     /**
      * 消费者线程池数量（并行量）
      * 默认值10，高并发下用连接池性能比直连好一点。配置为0或小于0的数字，则不启用HTTP的连接池，采用直接调用的方式。
