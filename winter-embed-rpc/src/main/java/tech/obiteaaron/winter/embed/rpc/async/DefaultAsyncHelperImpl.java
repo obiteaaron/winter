@@ -40,7 +40,7 @@ public class DefaultAsyncHelperImpl implements AsyncHelper {
         while (System.currentTimeMillis() <= endTime) {
             if (isConsumerNeedAsyncQueryResult(result)) {
                 // 第x次调用：查询结果
-                result = function.apply(innerInvokeContext.getSerializedContext());
+                result = function.apply(serializedContextQuery);
             } else {
                 // 如果有结果了，则直接返回
                 return result;
