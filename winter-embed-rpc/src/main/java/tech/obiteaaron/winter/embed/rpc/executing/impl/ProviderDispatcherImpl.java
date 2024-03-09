@@ -60,7 +60,7 @@ public class ProviderDispatcherImpl implements ProviderDispatcher {
                     && winterRpcBootstrap.getAsyncHelper().isConsumerNeedAsyncQueryResult((String) invokeContext.getResult())) {
                 return (String) invokeContext.getResult();
             }
-            // 序列化
+            // 序列化。序列化放在最后，而不是在RealInvokeFilter中，是为了方便用户扩展的Filter想要在拿到结果后进行增强修改而设计的。
             return serialize(invokeContext.getResult(), serializerType);
         } catch (Exception e) {
             throw e instanceof RuntimeException ? (RuntimeException) e : new RuntimeException(e);

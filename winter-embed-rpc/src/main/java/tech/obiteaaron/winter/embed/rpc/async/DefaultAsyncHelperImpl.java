@@ -6,9 +6,7 @@ import tech.obiteaaron.winter.common.tools.threadpool.ThreadUtils;
 import tech.obiteaaron.winter.embed.rpc.executing.InnerInvokeContext;
 import tech.obiteaaron.winter.embed.rpc.executing.InvokeContext;
 import tech.obiteaaron.winter.embed.rpc.regesiter.ConsumerConfig;
-import tech.obiteaaron.winter.embed.rpc.serializer.WinterDeserializer;
 import tech.obiteaaron.winter.embed.rpc.serializer.WinterSerializeFactory;
-import tech.obiteaaron.winter.embed.rpc.serializer.WinterSerializer;
 
 import java.util.HashMap;
 import java.util.concurrent.*;
@@ -107,16 +105,14 @@ public class DefaultAsyncHelperImpl implements AsyncHelper {
     }
 
     private Object findFutureResult(String asyncRequestId) {
-        String result = asyncResultDistributeStorage.find(asyncRequestId);
+        Object result = asyncResultDistributeStorage.find(asyncRequestId);
         if (result == null) {
             return null;
         }
-        WinterDeserializer winterDeserializer = WinterSerializeFactory.getWinterDeserializer("hessian");
-        Object deserializer = winterDeserializer.deserializer(result, false, null, null);
-        if (deserializer instanceof Throwable) {
-            throw new RuntimeException((Throwable) deserializer);
+        if (result instanceof Throwable) {
+            throw new RuntimeException((Throwable) result);
         } else {
-            return deserializer;
+            return result;
         }
     }
 
@@ -132,16 +128,11 @@ public class DefaultAsyncHelperImpl implements AsyncHelper {
             if (v.isDone()) {
                 try {
                     Object result = v.get();
-                    // 先序列化写进去
-                    WinterSerializer winterSerializer = WinterSerializeFactory.getWinterSerializer("hessian");
-                    String serializer = winterSerializer.serializer(result);
-                    asyncResultDistributeStorage.save(k, serializer);
+                    asyncResultDistributeStorage.save(k, result);
                     WATCH_DOG_MAP.remove(k);
                 } catch (InterruptedException | ExecutionException e) {
                     // 作为结果写进去
-                    WinterSerializer winterSerializer = WinterSerializeFactory.getWinterSerializer("hessian");
-                    String serializer = winterSerializer.serializer(e);
-                    asyncResultDistributeStorage.save(k, serializer);
+                    asyncResultDistributeStorage.save(k, e);
                     WATCH_DOG_MAP.remove(k);
                 }
             }

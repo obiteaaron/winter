@@ -14,7 +14,7 @@ public interface AsyncResultDistributeStorage {
      * @param id    唯一幂等ID
      * @param value 业务结果
      */
-    void save(String id, String value);
+    void save(String id, Object value);
 
     /**
      * 查询
@@ -22,5 +22,5 @@ public interface AsyncResultDistributeStorage {
      * @param id 唯一幂等ID
      * @return {@link String}
      */
-    String find(String id);
+    Object find(String id);
 }
