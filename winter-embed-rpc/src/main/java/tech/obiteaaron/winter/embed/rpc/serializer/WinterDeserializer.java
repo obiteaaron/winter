@@ -4,5 +4,5 @@ public interface WinterDeserializer {
 
     String type();
 
-    Object deserializer(String value, boolean isArray, String[] types, String[] invocationParameterTypes);
+    Object deserializer(String value);
 }

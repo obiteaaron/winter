@@ -69,6 +69,18 @@ public class JsonUtils {
         }
     }
 
+    public static Object parseObject(String jsonString, String className) {
+        try {
+            if (StringUtils.isBlank(jsonString)) {
+                return null;
+            }
+            JavaType javaType = objectMapper.getTypeFactory().constructType(Class.forName(className));
+            return objectMapper.readValue(jsonString, javaType);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static String toJsonString(Object object) {
         try {
             return objectMapper.writeValueAsString(object);

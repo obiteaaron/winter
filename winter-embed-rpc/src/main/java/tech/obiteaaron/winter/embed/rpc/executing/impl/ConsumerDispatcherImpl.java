@@ -136,7 +136,7 @@ public class ConsumerDispatcherImpl implements ConsumerDispatcher {
 
     private Object deserializer(Method method, String serializerType, String result) {
         WinterDeserializer winterDeserializer = WinterSerializeFactory.getWinterDeserializer(serializerType);
-        Object deserializer = winterDeserializer.deserializer(result, false, new String[]{method.getGenericReturnType().getTypeName()}, null);
+        Object deserializer = winterDeserializer.deserializer(result);
         if (deserializer instanceof Object[]) {
             return ((Object[]) deserializer)[0];
         }

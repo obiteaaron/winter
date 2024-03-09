@@ -23,16 +23,18 @@ public class TestRpcStart {
         TimeUnit.SECONDS.sleep(5);
         testClient.invokeService();
         System.out.println();
-        TimeUnit.MINUTES.sleep(10);
+        TimeUnit.SECONDS.sleep(10);
     }
 
     @Test
     public void invokeServiceByHttp() throws InterruptedException {
         TimeUnit.SECONDS.sleep(5);
         CommonOkHttpClient commonOkHttpClient = OkHttpClientFactory.commonOkHttpClient();
+//        String s = commonOkHttpClient.doPost("http://127.0.0.1:8080/tech.obiteaaron.winter.embed.rpc.TestService?serializerType=json&methodSignature=findById(java.lang.String)",
+//                "{\"serviceName\":\"tech.obiteaaron.winter.embed.rpc.TestService\",\"methodSignature\":\"findById(java.lang.String)\",\"arguments\":[null]}");
         String s = commonOkHttpClient.doPost("http://127.0.0.1:8080/tech.obiteaaron.winter.embed.rpc.TestService?serializerType=json&methodSignature=findById(java.lang.String)",
-                "{\"serviceName\":\"tech.obiteaaron.winter.embed.rpc.TestService\",\"methodSignature\":\"findById(java.lang.String)\",\"arguments\":[null]}");
+                "object$WRSJ$tech.obiteaaron.winter.embed.rpc.executing.InvokeContext$WRSJ${\"applicationName\":\"rpc-test-client\",\"traceId\":\"7dfa52434519449d9ba250ca83de9ce0\",\"serviceName\":\"tech.obiteaaron.winter.embed.rpc.TestService\",\"methodSignature\":\"findById(java.lang.String)\",\"serializerType\":\"json\",\"arguments\":[\"[Ljava.lang.Object;\",[null]],\"result\":null}");
         System.out.println(s);
-        Assert.assertEquals("{\"id\":\"111\"}", s);
+        Assert.assertTrue(s.endsWith("{\"id\":\"111\"}"));
     }
 }

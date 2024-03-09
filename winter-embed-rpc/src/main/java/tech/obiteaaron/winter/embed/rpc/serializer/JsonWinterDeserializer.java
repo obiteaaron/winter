@@ -1,12 +1,10 @@
 package tech.obiteaaron.winter.embed.rpc.serializer;
 
-import com.fasterxml.jackson.databind.JavaType;
-import tech.obiteaaron.winter.common.tools.json.JsonUtils;
-import tech.obiteaaron.winter.embed.rpc.executing.InvokeContext;
+import org.apache.commons.lang3.StringUtils;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class JsonWinterDeserializer implements WinterDeserializer {
     @Override
@@ -15,49 +13,28 @@ public class JsonWinterDeserializer implements WinterDeserializer {
     }
 
     @Override
-    public Object deserializer(String value, boolean isArray, String[] types, String[] invocationParameterTypes) {
-        if (isArray) {
-            // 按参数的 Object[] 反序列化
-            // 这会导致序列化两次，严重影响性能
-            // 不支持抽象类，必须使用具体类型
-            if (value == null) {
-                return Arrays.stream(types).map(item -> null).collect(Collectors.toList());
+    public Object deserializer(String value) {
+        String[] split = StringUtils.splitByWholeSeparator(value, JsonWinterSerializer.SPLITTER);
+        String type = split[0];
+        AtomicInteger index = new AtomicInteger(1);
+        if ("object".equals(type)) {
+            Object object = doReadOneObject(split, index);
+            return object;
+        } else if ("array".equals(type)) {
+            List<Object> objects = new ArrayList<>();
+            while (index.get() < split.length) {
+                Object object = doReadOneObject(split, index);
+                objects.add(object);
             }
-            List<Object> arguments = JsonUtils.parseArray(value, Object.class);
-            Object[] objects = new Object[types.length];
-            int i = 0;
-            for (Object argument : arguments) {
-                if (argument == null) {
-                    objects[i++] = null;
-                    continue;
-                }
-                String jsonString = JsonUtils.toJsonString(argument);
-                JavaType javaType = JsonUtils.getTypeFactory().constructFromCanonical(types[i]);
-                Object o = JsonUtils.parseObject(jsonString, javaType);
-                objects[i++] = o;
-            }
-            return objects;
+            return objects.toArray();
         } else {
-            if (value == null) {
-                return null;
-            }
-            // 按返回值的 Object 反序列化
-            // 单值对象
-            JavaType javaType = JsonUtils.getTypeFactory().constructFromCanonical(types[0]);
-            if (InvokeContext.class.getCanonicalName().equals(types[0])) {
-                InvokeContext invokeContext = JsonUtils.parseObject(value, javaType);
-
-                // 特殊处理，二次序列化参数类型
-                Object[] arguments = invokeContext.getArguments();
-                if (arguments != null) {
-                    String[] argumentTypes = invocationParameterTypes;
-                    Object deserializer = this.deserializer(JsonUtils.toJsonString(arguments), true, argumentTypes, null);
-                    invokeContext.setArguments((Object[]) deserializer);
-                }
-                return invokeContext;
-            } else {
-                return JsonUtils.parseObject(value, javaType);
-            }
+            throw new UnsupportedOperationException(type);
         }
+    }
+
+    private Object doReadOneObject(String[] split, AtomicInteger index) {
+        String className = split[index.getAndIncrement()];
+        String json = split[index.getAndIncrement()];
+        return JsonWinterSerializer.JsonUtils.parseObject(json, className);
     }
 }

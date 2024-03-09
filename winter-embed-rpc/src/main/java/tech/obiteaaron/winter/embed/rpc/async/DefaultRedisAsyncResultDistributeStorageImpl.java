@@ -30,6 +30,6 @@ public class DefaultRedisAsyncResultDistributeStorageImpl implements AsyncResult
             return null;
         }
         WinterDeserializer winterDeserializer = WinterSerializeFactory.getWinterDeserializer("hessian");
-        return winterDeserializer.deserializer(value, false, null, null);
+        return winterDeserializer.deserializer(value);
     }
 }

@@ -93,7 +93,7 @@ public class ProviderDispatcherImpl implements ProviderDispatcher {
         }
         WinterDeserializer winterDeserializer = WinterSerializeFactory.getWinterDeserializer(serializerType);
         Objects.requireNonNull(StringUtils.trimToNull(body), "requestBody cannot be null");
-        InvokeContext invokeContext = (InvokeContext) winterDeserializer.deserializer(body, false, new String[]{InvokeContext.class.getCanonicalName()}, typeArray);
+        InvokeContext invokeContext = (InvokeContext) winterDeserializer.deserializer(body);
 
         return invokeContext;
     }
