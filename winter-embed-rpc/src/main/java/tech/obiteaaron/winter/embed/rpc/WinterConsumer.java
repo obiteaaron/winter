@@ -48,9 +48,9 @@ public @interface WinterConsumer {
 
     /**
      * 仅在async=true时有效，单位：毫秒
-     * 查询接口间隔时间
+     * 客户端在异步模式下，每次查询执行结果的间隔时间。注意不要太短，否则会造成QPS过高。
      *
      * @return
      */
-    int asyncQueryInterval() default 10;
+    int asyncQueryInterval() default 1000;
 }

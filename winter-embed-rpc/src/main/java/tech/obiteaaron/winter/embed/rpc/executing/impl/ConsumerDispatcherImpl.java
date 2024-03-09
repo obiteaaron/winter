@@ -53,6 +53,7 @@ public class ConsumerDispatcherImpl implements ConsumerDispatcher {
         innerInvokeContext.setAsyncRequestId(generatorAsyncRequestId(consumerConfig));
         innerInvokeContext.setAsyncAction(AsyncActionEnum.EXECUTE.name());
         innerInvokeContext.setExecuteTimeout(consumerConfig.getExecuteTimeout());
+        innerInvokeContext.setAsyncQueryInterval(consumerConfig.getAsyncQueryInterval());
 
         innerInvokeContext.setProviderUrl(providerUrl);
         innerInvokeContext.setConsumerConfig(consumerConfig);

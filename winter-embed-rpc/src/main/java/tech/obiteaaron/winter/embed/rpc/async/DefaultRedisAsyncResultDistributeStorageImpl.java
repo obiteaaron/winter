@@ -26,6 +26,9 @@ public class DefaultRedisAsyncResultDistributeStorageImpl implements AsyncResult
     @Override
     public Object find(String id) {
         String value = RedisConnectionHolder.syncRedisCommands().get(prefix + id);
+        if (value == null) {
+            return null;
+        }
         WinterDeserializer winterDeserializer = WinterSerializeFactory.getWinterDeserializer("hessian");
         return winterDeserializer.deserializer(value, false, null, null);
     }

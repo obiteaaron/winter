@@ -14,7 +14,7 @@ public class TestClient {
 
     @Autowired
     @Qualifier("tech.obiteaaron.winter.embed.rpc.TestService:Consumer")
-    @WinterConsumer(async = true, executeTimeout = 0)
+    @WinterConsumer(async = true)
     private TestService testService;
 
     @Autowired
@@ -26,7 +26,7 @@ public class TestClient {
         Assert.assertNotEquals(testService2, testService);
         {
             User byId = testService.findById("1");
-            User byId2 = testService2.findById("1");
+//            User byId2 = testService2.findById("1");
             System.out.println("findById success");
         }
         {

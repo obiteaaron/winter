@@ -78,7 +78,7 @@ public class DefaultAsyncHelperImpl implements AsyncHelper {
             try {
                 int executeTimeout = invokeContext.getExecuteTimeout();
                 // 有结果的情况下直接返回
-                return future.get(executeTimeout, TimeUnit.SECONDS);
+                return future.get(executeTimeout, TimeUnit.MILLISECONDS);
             } catch (InterruptedException | ExecutionException e) {
                 throw new RuntimeException(e);
             } catch (TimeoutException ignore) {
