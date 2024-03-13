@@ -22,7 +22,6 @@ public class JsonWinterSerializer implements WinterSerializer {
     public String serializer(Object object) {
         StringJoiner stringJoiner = new StringJoiner(SPLITTER);
         serializer0(object, stringJoiner);
-        System.out.println(stringJoiner.toString());
         return stringJoiner.toString();
     }
 
