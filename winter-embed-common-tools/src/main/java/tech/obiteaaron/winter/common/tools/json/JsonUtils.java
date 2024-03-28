@@ -8,8 +8,9 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.ArrayList;
+import java.lang.reflect.Type;
 import java.util.List;
+import java.util.Map;
 
 /**
  * JSON解析工具，整个工程全部都采用这个工具进行解析，方便统一替换具体实现类
@@ -30,18 +31,6 @@ public class JsonUtils {
                 return null;
             }
             return objectMapper.readValue(jsonString, clazz);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static <T> List<T> parseArray(String jsonString, Class<T> clazz) {
-        try {
-            if (StringUtils.isBlank(jsonString)) {
-                return null;
-            }
-            JavaType javaType = objectMapper.getTypeFactory().constructParametricType(ArrayList.class, clazz);
-            return objectMapper.readValue(jsonString, javaType);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -76,6 +65,60 @@ public class JsonUtils {
             }
             JavaType javaType = objectMapper.getTypeFactory().constructType(Class.forName(className));
             return objectMapper.readValue(jsonString, javaType);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static final TypeReference<Map<String, Object>> TYPE_REFERENCE_MAP = new TypeReference<Map<String, Object>>() {
+        @Override
+        public Type getType() {
+            return super.getType();
+        }
+    };
+
+    /**
+     * 建议所有的解析都使用实际的对象，但如果遇到临时使用的情况，可以采用这个方法
+     */
+    public static Map<String, Object> parseObject(String jsonString) {
+        try {
+            if (StringUtils.isBlank(jsonString)) {
+                return null;
+            }
+            return objectMapper.readValue(jsonString, TYPE_REFERENCE_MAP);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static <T> List<T> parseArray(String jsonString, Class<T> clazz) {
+        try {
+            if (StringUtils.isBlank(jsonString)) {
+                return null;
+            }
+            JavaType javaType = objectMapper.getTypeFactory().constructParametricType(List.class, clazz);
+            return objectMapper.readValue(jsonString, javaType);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static final TypeReference<List<Map<String, Object>>> TYPE_REFERENCE_LIST_MAP = new TypeReference<List<Map<String, Object>>>() {
+        @Override
+        public Type getType() {
+            return super.getType();
+        }
+    };
+
+    /**
+     * 建议所有的解析都使用实际的对象，但如果遇到临时使用的情况，可以采用这个方法
+     */
+    public static List<Map<String, Object>> parseArray(String jsonString) {
+        try {
+            if (StringUtils.isBlank(jsonString)) {
+                return null;
+            }
+            return objectMapper.readValue(jsonString, TYPE_REFERENCE_LIST_MAP);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
