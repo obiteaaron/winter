@@ -14,6 +14,8 @@ public interface ConfigDatabaseRepository {
 
     List<Config> query(Config config);
 
+    List<Config> queryHistory(Config config);
+
     int create(Config config);
 
     int modify(Config config);

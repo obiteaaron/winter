@@ -37,16 +37,27 @@ public class ConfigDatabaseRepositoryMysqlImpl implements ConfigDatabaseReposito
     }
 
     @Override
+    public List<Config> queryHistory(Config config) {
+        Objects.requireNonNull(config);
+        String group = StringUtils.trimToEmpty(config.getGroupName());
+        String name = StringUtils.trimToEmpty(config.getName());
+        String sql = "select `id`, `name`, `group_name` as groupName, `content`, `gmt_create` as gmtCreate, `gmt_modified` as gmtModified, `description` from winter_embed_config_center_history where `name` = ? and `group_name` = ? order by gmt_create desc";
+        return jdbcTemplate().query(sql, new Object[]{name, group}, new int[]{Types.VARCHAR, Types.VARCHAR}, new BeanPropertyRowMapper<>(Config.class));
+    }
+
+    @Override
     public int create(Config config) {
         Objects.requireNonNull(config);
         String name = Objects.requireNonNull(StringUtils.trimToNull(config.getName()));
         String group = Objects.requireNonNull(StringUtils.trimToNull(config.getGroupName()));
         String content = Objects.requireNonNull(StringUtils.trimToNull(config.getContent()));
         String description = StringUtils.trimToEmpty(config.getDescription());
-
-        String sql = "insert into  winter_embed_config_center(`name`, `group_name`, `content`, `description`) values (?, ?, ?, ?)";
-        return jdbcTemplate().update(sql, name, group, content, description);
-
+        try {
+            String sql = "insert into  winter_embed_config_center(`name`, `group_name`, `content`, `description`) values (?, ?, ?, ?)";
+            return jdbcTemplate().update(sql, name, group, content, description);
+        } finally {
+            createHistory(config);
+        }
     }
 
     @Override
@@ -57,13 +68,29 @@ public class ConfigDatabaseRepositoryMysqlImpl implements ConfigDatabaseReposito
         String group = Objects.requireNonNull(StringUtils.trimToNull(config.getGroupName()));
         String name = Objects.requireNonNull(StringUtils.trimToNull(config.getName()));
         String description = StringUtils.trimToNull(config.getDescription());
-        if (description == null) {
-            String sql = "update winter_embed_config_center set `content` = ?, `gmt_modified` = current_timestamp(3) where `id` = ? and `name` = ? and `group_name` = ?";
-            return jdbcTemplate().update(sql, content, id, name, group);
-        } else {
-            String sql = "update winter_embed_config_center set `content` = ?, `gmt_modified` = current_timestamp(3), `description` = ? where `id` = ? and `name` = ? and `group_name` = ?";
-            return jdbcTemplate().update(sql, content, description, id, name, group);
+        try {
+            if (description == null) {
+                String sql = "update winter_embed_config_center set `content` = ?, `gmt_modified` = current_timestamp(3) where `id` = ? and `name` = ? and `group_name` = ?";
+                return jdbcTemplate().update(sql, content, id, name, group);
+            } else {
+                String sql = "update winter_embed_config_center set `content` = ?, `gmt_modified` = current_timestamp(3), `description` = ? where `id` = ? and `name` = ? and `group_name` = ?";
+                return jdbcTemplate().update(sql, content, description, id, name, group);
+            }
+        } finally {
+            createHistory(config);
         }
+    }
+
+    private int createHistory(Config config) {
+        Config co = queryOne(config);
+        co = co == null ? config : co;
+        String sql = "insert into  winter_embed_config_center_history(`name`, `group_name`, `content`, `description`, `gmt_create`, `gmt_modified`) values (?, ?, ?, ?, ?, ?)";
+        return jdbcTemplate().update(sql, co.getName(), co.getGroupName(), co.getContent(), co.getDescription(), co.getGmtCreate(), co.getGmtModified());
+    }
+
+    private Config queryOne(Config config) {
+        String sql = "select `id`, `name`, `group_name` as groupName, `content`, `gmt_create` as gmtCreate, `gmt_modified` as gmtModified, `description` from winter_embed_config_center where `name` = ? and `group_name` = ? limit 1";
+        return jdbcTemplate().queryForObject(sql, new Object[]{config.getName(), config.getGroupName()}, new int[]{Types.VARCHAR, Types.VARCHAR}, new BeanPropertyRowMapper<>(Config.class));
     }
 
     @Override
