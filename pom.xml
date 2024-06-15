@@ -15,7 +15,7 @@
         <module>winter-embed-register-center</module>
         <module>winter-embed-rpc</module>
         <module>winter-embed-scheduler-center</module>
-        <module>winter-embed-strategy-center</module>
+<!--        <module>winter-embed-strategy-center</module>-->
 <!--        <module>winter-embed-workflow-engine</module>-->
         <module>winter-embed-web-manager</module>
         <module>winter-embed-data-sync</module>
