@@ -89,9 +89,11 @@ public final class ConfigCenterInner {
                     registerListener(group, name, config -> {
                         String content = config.getContent();
                         if (content == null) {
+                            log.info("ConfigCenter config NULL_VALUE, group={}, name={}, content={}", group, name, content);
                             return 0;
                         }
                         if (content.equals(ConfigCenter.UNDEFINED_VALUE)) {
+                            log.info("ConfigCenter config UNDEFINED_VALUE, group={}, name={}, content={}", group, name, content);
                             return 0;
                         }
                         Object fieldValue = null;
@@ -103,14 +105,16 @@ public final class ConfigCenterInner {
                         }
                         Object newValue = ConfigValueUtil.parseValue(content, field.getType(), field.getGenericType());
                         if (newValue != null && !Objects.equals(newValue, fieldValue)) {
-                            log.info("ConfigCenter config modified, group={}, name={}, content={}", group, name, content);
+                            log.info("ConfigCenter config MODIFIED, group={}, name={}, content={}", group, name, content);
                             try {
                                 field.set(bean, newValue);
                             } catch (IllegalAccessException e) {
+                                log.info("ConfigCenter config EXCEPTION, group={}, name={}, content={}", group, name, content);
                                 throw new RuntimeException(e);
                             }
                             return 1;
                         }
+                        log.info("ConfigCenter config NOT_CHANGE, group={}, name={}, content={}", group, name, content);
                         return 0;
                     });
                     // 第一次初始化时插入新配置
@@ -169,7 +173,7 @@ public final class ConfigCenterInner {
         mergeDeltaConfig(deltaConfigs);
         // 触发全部监听器
         @SuppressWarnings("UnnecessaryLocalVariable")
-        int effectNum = triggerListener();
+        int effectNum = triggerListener(deltaConfigs);
         return effectNum;
     }
 
@@ -184,12 +188,12 @@ public final class ConfigCenterInner {
         allConfigs = new ArrayList<>(map.values());
     }
 
-    private static int triggerListener() {
+    private static int triggerListener(List<Config> deltaConfigs) {
         if (allConfigs == null || allConfigs.isEmpty()) {
             return 0;
         }
         @SuppressWarnings("UnnecessaryLocalVariable")
-        int effectNum = allConfigs.stream().map(item -> {
+        int effectNum = deltaConfigs.stream().map(item -> {
 
             List<Function<Config, Integer>> functions = changedListenerFunctionMap.get(item.uniqueKey());
             if (functions != null && !functions.isEmpty()) {
