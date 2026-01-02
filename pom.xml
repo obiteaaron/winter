@@ -19,6 +19,7 @@
 <!--        <module>winter-embed-workflow-engine</module>-->
         <module>winter-embed-web-manager</module>
         <module>winter-embed-data-sync</module>
+        <module>winter-portal</module>
     </modules>
 
     <description>The winter of the Internet enterprise is coming, all the major companies are laying off employees,
@@ -297,6 +298,11 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-autoconfigure</artifactId>
+                <version>${spring-boot.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-web</artifactId>
                 <version>${spring-boot.version}</version>
             </dependency>
             <!-- spring boot end-->

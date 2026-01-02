@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Winter - 嵌入式分布式中间件套件</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <h1>❄️ Winter</h1>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#features">核心功能</a></li>
+                <li><a href="#modules">模块介绍</a></li>
+                <li><a href="#quickstart">快速开始</a></li>
+                <li><a href="https://gitee.com/zhanlanstar/winter" target="_blank">GitHub</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero 区域 -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">Winter</h1>
+                <h2 class="hero-subtitle">嵌入式分布式中间件套件</h2>
+                <p class="hero-description">
+                    面向单体应用和小集群的轻量级中间件解决方案<br>
+                    基于 MySQL/Redis 构建，避免引入额外中间件<br>
+                    降低维护成本，提升开发效率
+                </p>
+                <div class="hero-buttons">
+                    <a href="#quickstart" class="btn btn-primary">快速开始</a>
+                    <a href="https://gitee.com/zhanlanstar/winter" target="_blank" class="btn btn-secondary">查看源码</a>
+                </div>
+            </div>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <div class="stat-number">10+</div>
+                    <div class="stat-label">功能模块</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">5</div>
+                    <div class="stat-label">核心模块</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">100%</div>
+                    <div class="stat-label">开源免费</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 核心功能 -->
+    <section id="features" class="features">
+        <div class="container">
+            <h2 class="section-title">核心功能</h2>
+            <p class="section-subtitle">为中小型系统提供完整的分布式能力</p>
+
+            <div class="feature-grid">
+                <!-- 配置中心 -->
+                <div class="feature-card feature-card-highlight">
+                    <div class="feature-icon">⚙️</div>
+                    <h3>配置中心</h3>
+                    <p class="feature-tag">核心模块</p>
+                    <p class="feature-description">
+                        基于 MySQL 提供秒级配置变更推送能力，支持配置的动态更新和实时推送。
+                    </p>
+                    <ul class="feature-list">
+                        <li>✓ 秒级配置变更推送</li>
+                        <li>✓ 动态配置更新</li>
+                        <li>✓ 实时配置生效</li>
+                        <li>✓ 无需额外中间件</li>
+                    </ul>
+                </div>
+
+                <!-- RPC 框架 -->
+                <div class="feature-card feature-card-highlight">
+                    <div class="feature-icon">🔌</div>
+                    <h3>RPC 框架</h3>
+                    <p class="feature-tag">核心模块</p>
+                    <p class="feature-description">
+                        基于 HTTP(S) 提供服务注册、发现和远程调用，支持内网集群和公网调用。
+                    </p>
+                    <ul class="feature-list">
+                        <li>✓ HTTP(S) 协议支持</li>
+                        <li>✓ 服务注册与发现</li>
+                        <li>✓ 负载均衡调用</li>
+                        <li>✓ Filter 扩展机制</li>
+                    </ul>
+                </div>
+
+                <!-- 调度中心 -->
+                <div class="feature-card feature-card-highlight">
+                    <div class="feature-icon">⏰</div>
+                    <h3>调度中心</h3>
+                    <p class="feature-tag">核心模块</p>
+                    <p class="feature-description">
+                        提供集群任务调度能力，支持单机任务、MapReduce 任务等多种任务类型。
+                    </p>
+                    <ul class="feature-list">
+                        <li>✓ 单机任务调度</li>
+                        <li>✓ MapReduce 分布式计算</li>
+                        <li>✓ 时间轮定时器</li>
+                        <li>✓ 可选持久化</li>
+                    </ul>
+                </div>
+
+                <!-- 注册中心 -->
+                <div class="feature-card">
+                    <div class="feature-icon">📡</div>
+                    <h3>注册中心</h3>
+                    <p class="feature-tag">次要模块</p>
+                    <p class="feature-description">
+                        提供集群 IP 发现、服务注册和发现功能，基于配置中心实现。
+                    </p>
+                </div>
+
+                <!-- 数据同步 -->
+                <div class="feature-card">
+                    <div class="feature-icon">🔄</div>
+                    <h3>数据同步</h3>
+                    <p class="feature-tag">次要模块</p>
+                    <p class="feature-description">
+                        基于数据库表扫描的数据同步工具，解决简单场景下的数据同步问题。
+                    </p>
+                </div>
+
+                <!-- 通用工具 -->
+                <div class="feature-card">
+                    <div class="feature-icon">🛠️</div>
+                    <h3>通用工具</h3>
+                    <p class="feature-tag">主要模块</p>
+                    <p class="feature-description">
+                        提供缓存、HTTP 客户端、分布式锁、限流等高阶常用工具。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 模块详细介绍 -->
+    <section id="modules" class="modules">
+        <div class="container">
+            <h2 class="section-title">模块架构</h2>
+            <p class="section-subtitle">清晰的模块划分，灵活的组合方式</p>
+
+            <div class="module-diagram">
+                <div class="module-layer">
+                    <div class="layer-title">应用层</div>
+                    <div class="module-items">
+                        <div class="module-item module-item-planning">
+                            <span class="module-name">Web 管理工具</span>
+                            <span class="module-status">Planning</span>
+                        </div>
+                        <div class="module-item module-item-planning">
+                            <span class="module-name">策略中心</span>
+                            <span class="module-status">Planning</span>
+                        </div>
+                        <div class="module-item module-item-release">
+                            <span class="module-name">流程引擎</span>
+                            <span class="module-status">Release</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="module-layer">
+                    <div class="layer-title">核心层</div>
+                    <div class="module-items">
+                        <div class="module-item module-item-beta">
+                            <span class="module-name">调度中心</span>
+                            <span class="module-status">Beta</span>
+                        </div>
+                        <div class="module-item module-item-release">
+                            <span class="module-name">RPC 框架</span>
+                            <span class="module-status">Release</span>
+                        </div>
+                        <div class="module-item module-item-beta">
+                            <span class="module-name">注册中心</span>
+                            <span class="module-status">Beta</span>
+                        </div>
+                        <div class="module-item module-item-release">
+                            <span class="module-name">配置中心</span>
+                            <span class="module-status">Release</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="module-layer">
+                    <div class="layer-title">基础层</div>
+                    <div class="module-items">
+                        <div class="module-item module-item-release">
+                            <span class="module-name">通用工具</span>
+                            <span class="module-status">Release</span>
+                        </div>
+                        <div class="module-item module-item-release">
+                            <span class="module-name">基础模块</span>
+                            <span class="module-status">Release</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 快速开始 -->
+    <section id="quickstart" class="quickstart">
+        <div class="container">
+            <h2 class="section-title">快速开始</h2>
+            <p class="section-subtitle">三步即可集成 Winter 到你的项目</p>
+
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>引入依赖</h3>
+                        <div class="code-block">
+                            <pre><code>&lt;dependency&gt;
+    &lt;groupId&gt;tech.obiteaaron.winter&lt;/groupId&gt;
+    &lt;artifactId&gt;winter-embed-config-center&lt;/artifactId&gt;
+    &lt;version&gt;1.1.0-SNAPSHOT&lt;/version&gt;
+&lt;/dependency&gt;</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>配置数据源</h3>
+                        <div class="code-block">
+                            <pre><code>spring.datasource.url=jdbc:mysql://localhost:3306/winter
+spring.datasource.username=root
+spring.datasource.password=password</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>启动应用</h3>
+                        <div class="code-block">
+                            <pre><code>// Spring Boot 直接启动
+@SpringBootApplication
+public class Application {
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+}</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 优势对比 -->
+    <section class="advantages">
+        <div class="container">
+            <h2 class="section-title">为什么选择 Winter</h2>
+            <div class="comparison-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>特性</th>
+                            <th>Winter</th>
+                            <th>Dubbo</th>
+                            <th>Nacos</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>部署复杂度</td>
+                            <td class="highlight">低（嵌入式）</td>
+                            <td>中</td>
+                            <td>高（独立部署）</td>
+                        </tr>
+                        <tr>
+                            <td>HTTP 支持</td>
+                            <td class="highlight">原生支持</td>
+                            <td>需额外配置</td>
+                            <td>支持</td>
+                        </tr>
+                        <tr>
+                            <td>配置推送</td>
+                            <td class="highlight">秒级推送</td>
+                            <td>-</td>
+                            <td>支持</td>
+                        </tr>
+                        <tr>
+                            <td>MapReduce</td>
+                            <td class="highlight">支持</td>
+                            <td>-</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td>系统依赖</td>
+                            <td class="highlight">MySQL/Redis</td>
+                            <td>ZooKeeper</td>
+                            <td>独立服务</td>
+                        </tr>
+                        <tr>
+                            <td>学习成本</td>
+                            <td class="highlight">低</td>
+                            <td>中</td>
+                            <td>中</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- 技术栈 -->
+    <section class="tech-stack">
+        <div class="container">
+            <h2 class="section-title">技术栈</h2>
+            <div class="tech-items">
+                <div class="tech-item">Java 8 及以上</div>
+                <div class="tech-item">Spring Boot</div>
+                <div class="tech-item">Netty</div>
+                <div class="tech-item">MySQL</div>
+                <div class="tech-item">Redis</div>
+                <div class="tech-item">Jackson</div>
+                <div class="tech-item">Hessian</div>
+                <div class="tech-item">OkHttp</div>
+                <div class="tech-item">Caffeine</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Winter</h3>
+                    <p>嵌入式分布式中间件套件</p>
+                </div>
+                <div class="footer-section">
+                    <h4>文档</h4>
+                    <ul>
+                        <li><a href="README.md">项目说明</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>链接</h4>
+                    <ul>
+                        <li><a href="https://gitee.com/zhanlanstar/winter" target="_blank">Gitee</a></li>
+                        <li><a href="https://github.com/obiteaaron/SmartEngine-Enhance" target="_blank">SmartEngine</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Winter. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/script.js"></script>
+</body>
+</html>
