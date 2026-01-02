@@ -1,1 +1,0 @@
-java -jar ./winter-portal/target/winter-portal-1.1.0-SNAPSHOT.jar --server.port=80
