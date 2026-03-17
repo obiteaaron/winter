@@ -17,7 +17,7 @@
                 <li><a href="#features">核心功能</a></li>
                 <li><a href="#modules">模块介绍</a></li>
                 <li><a href="#quickstart">快速开始</a></li>
-                <li><a href="https://gitee.com/zhanlanstar/winter" target="_blank">GitHub</a></li>
+                <li><a href="https://github.com/obiteaaron/winter" target="_blank">GitHub</a></li>
             </ul>
         </div>
     </nav>
@@ -35,17 +35,14 @@
                 </p>
                 <div class="hero-buttons">
                     <a href="#quickstart" class="btn btn-primary">快速开始</a>
-                    <a href="https://gitee.com/zhanlanstar/winter" target="_blank" class="btn btn-secondary">查看源码</a>
+                    <a href="https://github.com/obiteaaron/winter" target="_blank" class="btn btn-secondary">GitHub</a>
+                    <a href="https://gitee.com/zhanlanstar/winter" target="_blank" class="btn btn-secondary">Gitee</a>
                 </div>
             </div>
             <div class="hero-stats">
                 <div class="stat-item">
-                    <div class="stat-number">10+</div>
+                    <div class="stat-number">3+</div>
                     <div class="stat-label">功能模块</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number">5</div>
-                    <div class="stat-label">核心模块</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-number">100%</div>
@@ -119,26 +116,6 @@
                         提供集群 IP 发现、服务注册和发现功能，基于配置中心实现。
                     </p>
                 </div>
-
-                <!-- 数据同步 -->
-                <div class="feature-card">
-                    <div class="feature-icon">🔄</div>
-                    <h3>数据同步</h3>
-                    <p class="feature-tag">次要模块</p>
-                    <p class="feature-description">
-                        基于数据库表扫描的数据同步工具，解决简单场景下的数据同步问题。
-                    </p>
-                </div>
-
-                <!-- 通用工具 -->
-                <div class="feature-card">
-                    <div class="feature-icon">🛠️</div>
-                    <h3>通用工具</h3>
-                    <p class="feature-tag">主要模块</p>
-                    <p class="feature-description">
-                        提供缓存、HTTP 客户端、分布式锁、限流等高阶常用工具。
-                    </p>
-                </div>
             </div>
         </div>
     </section>
@@ -155,10 +132,6 @@
                     <div class="module-items">
                         <div class="module-item module-item-planning">
                             <span class="module-name">Web 管理工具</span>
-                            <span class="module-status">Planning</span>
-                        </div>
-                        <div class="module-item module-item-planning">
-                            <span class="module-name">策略中心</span>
                             <span class="module-status">Planning</span>
                         </div>
                         <div class="module-item module-item-release">
@@ -190,19 +163,7 @@
                     </div>
                 </div>
 
-                <div class="module-layer">
-                    <div class="layer-title">基础层</div>
-                    <div class="module-items">
-                        <div class="module-item module-item-release">
-                            <span class="module-name">通用工具</span>
-                            <span class="module-status">Release</span>
-                        </div>
-                        <div class="module-item module-item-release">
-                            <span class="module-name">基础模块</span>
-                            <span class="module-status">Release</span>
-                        </div>
-                    </div>
-                </div>
+                
             </div>
         </div>
     </section>
@@ -263,55 +224,158 @@ public class Application {
     <section class="advantages">
         <div class="container">
             <h2 class="section-title">为什么选择 Winter</h2>
-            <div class="comparison-table">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>特性</th>
-                            <th>Winter</th>
-                            <th>Dubbo</th>
-                            <th>Nacos</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>部署复杂度</td>
-                            <td class="highlight">低（嵌入式）</td>
-                            <td>中</td>
-                            <td>高（独立部署）</td>
-                        </tr>
-                        <tr>
-                            <td>HTTP 支持</td>
-                            <td class="highlight">原生支持</td>
-                            <td>需额外配置</td>
-                            <td>支持</td>
-                        </tr>
-                        <tr>
-                            <td>配置推送</td>
-                            <td class="highlight">秒级推送</td>
-                            <td>-</td>
-                            <td>支持</td>
-                        </tr>
-                        <tr>
-                            <td>MapReduce</td>
-                            <td class="highlight">支持</td>
-                            <td>-</td>
-                            <td>-</td>
-                        </tr>
-                        <tr>
-                            <td>系统依赖</td>
-                            <td class="highlight">MySQL/Redis</td>
-                            <td>ZooKeeper</td>
-                            <td>独立服务</td>
-                        </tr>
-                        <tr>
-                            <td>学习成本</td>
-                            <td class="highlight">低</td>
-                            <td>中</td>
-                            <td>中</td>
-                        </tr>
-                    </tbody>
-                </table>
+
+            <!-- 配置中心对比 -->
+            <div class="comparison-section">
+                <h3 class="comparison-title">配置中心对比</h3>
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>特性</th>
+                                <th>Winter 配置中心</th>
+                                <th>Nacos</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>部署方式</td>
+                                <td class="highlight">嵌入式（嵌入应用）</td>
+                                <td>独立部署</td>
+                            </tr>
+                            <tr>
+                                <td>存储</td>
+                                <td class="highlight">MySQL</td>
+                                <td>内置数据库/MySQL</td>
+                            </tr>
+                            <tr>
+                                <td>配置推送</td>
+                                <td class="highlight">秒级推送</td>
+                                <td>支持</td>
+                            </tr>
+                            <tr>
+                                <td>依赖组件</td>
+                                <td class="highlight">仅 MySQL</td>
+                                <td>独立服务</td>
+                            </tr>
+                            <tr>
+                                <td>维护成本</td>
+                                <td class="highlight">低</td>
+                                <td>中</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- RPC 框架对比 -->
+            <div class="comparison-section">
+                <h3 class="comparison-title">RPC 框架对比</h3>
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>特性</th>
+                                <th>Winter RPC</th>
+                                <th>Dubbo</th>
+                                <th>gRPC</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>协议</td>
+                                <td class="highlight">HTTP(S)</td>
+                                <td>TCP</td>
+                                <td>HTTP/2</td>
+                            </tr>
+                            <tr>
+                                <td>部署方式</td>
+                                <td>嵌入式</td>
+                                <td>独立部署</td>
+                                <td class="highlight">嵌入式/独立部署</td>
+                            </tr>
+                            <tr>
+                                <td>服务发现</td>
+                                <td class="highlight">内嵌配置中心</td>
+                                <td>ZooKeeper/Nacos</td>
+                                <td>Endpoint/注册中心</td>
+                            </tr>
+                            <tr>
+                                <td>负载均衡</td>
+                                <td>支持</td>
+                                <td>支持</td>
+                                <td>支持</td>
+                            </tr>
+                            <tr>
+                                <td>扩展机制</td>
+                                <td>Filter</td>
+                                <td>Filter/Router</td>
+                                <td>Interceptor</td>
+                            </tr>
+                            <tr>
+                                <td>跨语言</td>
+                                <td>否</td>
+                                <td>部分支持</td>
+                                <td class="highlight">原生支持</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 调度中心对比 -->
+            <div class="comparison-section">
+                <h3 class="comparison-title">调度中心对比</h3>
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>特性</th>
+                                <th>Winter 调度中心</th>
+                                <th>XXL-Job</th>
+                                <th>PowerJob</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>部署方式</td>
+                                <td class="highlight">嵌入式</td>
+                                <td>独立部署</td>
+                                <td>独立部署</td>
+                            </tr>
+                            <tr>
+                                <td>分布式任务</td>
+                                <td>MapReduce</td>
+                                <td>分片广播</td>
+                                <td>MapReduce</td>
+                            </tr>
+                            <tr>
+                                <td>定时器</td>
+                                <td>数据库轮询+时间轮</td>
+                                <td>数据库轮询+时间轮</td>
+                                <td>数据库轮询+时间轮</td>
+                            </tr>
+                            <tr>
+                                <td>依赖组件</td>
+                                <td>VertX + MySQL（可选）</td>
+                                <td>MySQL</td>
+                                <td>MySQL/Akka</td>
+                            </tr>
+                            <tr>
+                                <td>管理界面</td>
+                                <td>开发中</td>
+                                <td class="highlight">完整</td>
+                                <td class="highlight">完整</td>
+                            </tr>
+                            <tr>
+                                <td>适用场景</td>
+                                <td class="highlight">轻量级/内网集群</td>
+                                <td>中大型集群</td>
+                                <td>大规模分布式</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </section>
@@ -324,6 +388,7 @@ public class Application {
                 <div class="tech-item">Java 8 及以上</div>
                 <div class="tech-item">Spring Boot</div>
                 <div class="tech-item">Netty</div>
+                <div class="tech-item">Vert.x</div>
                 <div class="tech-item">MySQL</div>
                 <div class="tech-item">Redis</div>
                 <div class="tech-item">Jackson</div>
@@ -345,12 +410,13 @@ public class Application {
                 <div class="footer-section">
                     <h4>文档</h4>
                     <ul>
-                        <li><a href="README.md">项目说明</a></li>
+                        <li><a href="https://gitee.com/zhanlanstar/winter/blob/master/README.md" target="_blank">项目说明</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
                     <h4>链接</h4>
                     <ul>
+                        <li><a href="https://github.com/obiteaaron/winter" target="_blank">GitHub</a></li>
                         <li><a href="https://gitee.com/zhanlanstar/winter" target="_blank">Gitee</a></li>
                         <li><a href="https://github.com/obiteaaron/SmartEngine-Enhance" target="_blank">SmartEngine</a></li>
                     </ul>
